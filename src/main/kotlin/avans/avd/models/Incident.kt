@@ -9,7 +9,7 @@ enum class Priority {
     Low, Medium, High, Vital
 }
 
-enum class Status { OPEN, ONGOING, DONE }
+enum class Status { OPEN, ASSIGNED, DONE }
 
 data class Incident(
     val id: Long = NEW_INCIDENT_ID,
