@@ -1,0 +1,2 @@
+        // ADMIN and a municipal OFFICIAL can get all issues incidents
+        // a normal USER can only self issued incidents.
