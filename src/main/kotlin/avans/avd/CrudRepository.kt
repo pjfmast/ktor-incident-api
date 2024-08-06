@@ -6,5 +6,4 @@ interface CrudRepository<T, ID> {
     suspend fun save(entity: T): T
     suspend fun saveAll(entities: Iterable<T>): List<T>
     suspend fun delete(entity: T): Boolean
-//    suspend fun deleteAll()
 }

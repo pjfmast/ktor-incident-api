@@ -25,6 +25,9 @@ data class Incident(
 
     val priority: Priority = Priority.Low,
     val status: Status = Status.OPEN,
+    val images: MutableList<String> = mutableListOf(),
+
+    // metadata about creating, updating and completing the Incident report
     val createdAt: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     val updatedAt: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     val completedAt: LocalDateTime? = null,

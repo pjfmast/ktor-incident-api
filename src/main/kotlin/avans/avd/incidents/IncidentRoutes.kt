@@ -4,14 +4,16 @@ import avans.avd.exceptions.MissingRoleException
 import avans.avd.users.Role
 import avans.avd.utils.*
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.io.File
 
-fun Route.incidentRoute(
+fun Route.incidentRoutes(
     incidentService: IncidentService
 ) {
     // Anyone may create an Incident, if anonymous the Incident cannot be edited later by the issuer.
@@ -31,21 +33,64 @@ fun Route.incidentRoute(
             )
             call.respond(HttpStatusCode.Created)
         }
+
     }
 
 
     authenticate {
+        post("/{incidentId}/images") {
+            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
+                ?: throw BadRequestException("Invalid ID")
+
+            val foundIncident = incidentService.findById(incidentId)
+                ?: throw NotFoundException()
+
+            val userId = call.userId()
+
+
+            // a qualified official can document an incident with pictures or any USER can document own reported Incidents
+            if (isQualifiedOfficial() || foundIncident.reportedBy == userId) {
+                var imageFileDescription = ""
+                var imageFileName = ""
+
+                val multipartData = call.receiveMultipart()
+
+                multipartData.forEachPart { part ->
+                    when (part) {
+                        is PartData.FormItem-> {
+                            imageFileDescription = part.value
+                        }
+
+                        is PartData.FileItem -> {
+                            val nextIncidentImageNr = foundIncident.images.size + 1 // images are not deleted (yet), but safer to increment the max imageNr?
+
+                            val extension: String = part.originalFileName?.split(".")?.last() ?: "png"
+                            imageFileName = "incident${incidentId}-image$nextIncidentImageNr.$extension"
+                            val fileBytes = part.streamProvider().readBytes()
+                            File("uploads/$imageFileName").writeBytes(fileBytes)
+                            incidentService.addImage(incidentId, imageFileName)
+                        }
+
+                        else -> {}
+                    }
+                    part.dispose()
+                }
+                call.respond(HttpStatusCode.OK, "$imageFileDescription is uploaded for incident with id: ${incidentId} to 'uploads/$imageFileName'")
+            }
+        }
+
         get {
             assertHasRole(Role.ADMIN)
             val incidents = incidentService.findAll()
 
             call.respond(incidents.map(Incident::toResponse))
         }
-        get("/{id}") {
-            val id: Long = call.parameters["id"]?.toLongOrNull()
+
+        get("/{incidentId}") {
+            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
-            val foundIncident = incidentService.findById(id)
+            val foundIncident = incidentService.findById(incidentId)
                 ?: throw NotFoundException()
 
             val userId = call.userId()
@@ -57,8 +102,27 @@ fun Route.incidentRoute(
 
             return@get call.respond(HttpStatusCode.NotFound)
         }
-        put("/{id}") {
-            val incidentId: Long = call.parameters["id"]?.toLong()
+
+        delete("/{incidentId}") {
+            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
+                ?: throw BadRequestException("Invalid ID")
+
+            val foundIncident = incidentService.findById(incidentId)
+                ?: throw NotFoundException()
+
+            val userId = call.userId()
+
+            // a qualified official may get any Incident, a normal USER can only get own reported Incidents
+            if (isQualifiedOfficial() || foundIncident.reportedBy == userId) {
+                incidentService.delete(incidentId)
+                call.respond(HttpStatusCode.OK, "Incident with id: $incidentId is deleted.")
+            }
+
+            return@delete call.respond(HttpStatusCode.NotFound)
+        }
+
+        put("/{incidentId}") {
+            val incidentId: Long = call.parameters["incidentId"]?.toLong()
                 ?: throw NotFoundException()
 
             val incidentRequest = call.receive<IncidentRequest>()
@@ -76,9 +140,10 @@ fun Route.incidentRoute(
 
             call.respond(HttpStatusCode.OK)
         }
-        patch("/{id}/{status}") {
-            assertHasRole(Role.ADMIN)
-            val incidentId: Long = call.parameters["id"]?.toLongOrNull()
+
+        patch("/{incidentId}/{status}") {
+            assertHasRole(Role.ADMIN, Role.OFFICIAL)
+            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
             val status: Status = call.parameters["status"]
@@ -119,6 +184,7 @@ fun Incident.toResponse(): IncidentResponse =
         latitude = this.latitude,
         longitude = this.longitude,
         status = this.status,
+        images = this.images,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
         completedAt = this.completedAt

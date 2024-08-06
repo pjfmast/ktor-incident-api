@@ -7,6 +7,7 @@ import kotlinx.datetime.toLocalDateTime
 
 object FakeIncidentRepository : IncidentRepository<Long> {
     private var incidentId: Long = 0L
+    private var imageId: Long = 0L
     private val incidents = mutableListOf<Incident>()
 
     // Seed the fake repository with some dummy data
@@ -19,7 +20,8 @@ object FakeIncidentRepository : IncidentRepository<Long> {
                 "Sink hole here. Dangerous situation! Quick fix needed.",
                 51.58677130730741,
                 4.808487370673,
-                Priority.High
+                Priority.High,
+                Status.ASSIGNED,
             )
         )
         create(
@@ -76,6 +78,15 @@ object FakeIncidentRepository : IncidentRepository<Long> {
         )
 
         return update(changedIncident)
+    }
+
+    override suspend fun addImage(id: Long, imageFileName: String) {
+        val incident = findById(id)
+        if (incident != null) {
+            imageId++
+
+            incident.images.add(imageFileName)
+        }
     }
 
     override suspend fun save(entity: Incident): Incident {
