@@ -10,6 +10,8 @@ fun Application.usersModule() {
     val incidentService: IncidentService by inject()
 
     routing {
-        userRoute(userService, incidentService)
+        route("api/users") {
+            userRoutes(userService, incidentService)
+        }
     }
 }

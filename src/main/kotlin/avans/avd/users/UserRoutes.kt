@@ -12,7 +12,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.userRoute(
+fun Route.userRoutes(
     userService: UserService,
     incidentService: IncidentService
 ) {
@@ -53,7 +53,7 @@ fun Route.userRoute(
                 call.respond(foundUser.toResponse())
             }
 
-            get("/incident") {
+            get("/incidents") {
                 val id: Long = call.parameters["id"]?.toLong()
                     ?: return@get call.respond(HttpStatusCode.BadRequest)
 

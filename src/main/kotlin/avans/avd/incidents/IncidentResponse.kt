@@ -21,6 +21,8 @@ data class IncidentResponse (
     val latitude: Double,
     val longitude: Double,
 
+    val images: List<String>,
+
     val priority: Priority = Priority.Low,
     val status: Status = Status.OPEN,
     val createdAt: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
