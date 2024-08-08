@@ -4,11 +4,8 @@ import avans.avd.incidents.FakeIncidentRepository
 import avans.avd.users.FakeUserRepository
 import avans.avd.incidents.IncidentService
 import avans.avd.auth.JwtService
-import avans.avd.auth.authModule
 import avans.avd.exceptions.MissingRoleException
-import avans.avd.incidents.incidentsModule
 import avans.avd.users.UserService
-import avans.avd.users.usersModule
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -25,7 +22,7 @@ fun main(args: Array<String>) {
 }
 
 @Suppress("unused")
-fun Application.module() {
+fun Application.rootModule() {
     val userService = UserService(FakeUserRepository)
     val incidentService = IncidentService(FakeIncidentRepository)
     val jwtService = JwtService(this, userService)

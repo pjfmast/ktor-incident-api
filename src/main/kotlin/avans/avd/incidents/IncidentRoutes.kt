@@ -57,17 +57,18 @@ fun Route.incidentRoutes(
 
                 multipartData.forEachPart { part ->
                     when (part) {
-                        is PartData.FormItem-> {
+                        is PartData.FormItem -> {
                             imageFileDescription = part.value
                         }
 
                         is PartData.FileItem -> {
-                            val nextIncidentImageNr = foundIncident.images.size + 1 // images are not deleted (yet), but safer to increment the max imageNr?
+                            val nextIncidentImageNr =
+                                foundIncident.images.size + 1 // images are not deleted (yet), but safer to increment the max imageNr?
 
                             val extension: String = part.originalFileName?.split(".")?.last() ?: "png"
                             imageFileName = "incident${incidentId}-image$nextIncidentImageNr.$extension"
                             val fileBytes = part.streamProvider().readBytes()
-                            File("uploads/$imageFileName").writeBytes(fileBytes)
+                            File(getImageUploadPath(imageFileName)).writeBytes(fileBytes)
                             incidentService.addImage(incidentId, imageFileName)
                         }
 
@@ -75,7 +76,10 @@ fun Route.incidentRoutes(
                     }
                     part.dispose()
                 }
-                call.respond(HttpStatusCode.OK, "$imageFileDescription is uploaded for incident with id: ${incidentId} to 'uploads/$imageFileName'")
+                call.respond(
+                    HttpStatusCode.OK,
+                    "$imageFileDescription is uploaded for incident with id: ${incidentId} to ${getImageUploadPath(imageFileName)}"
+                )
             }
         }
 

@@ -10,10 +10,13 @@ fun Application.incidentsModule() {
     val incidentService: IncidentService by inject()
 
     routing {
-        staticFiles("/images", File("uploads"), "incident.png") {
+        staticFiles("api/incidents/images", File("uploads/incidentsImages"), "incident.png") {
+            default("incident.png")
         }
         route("/api/incidents") {
             incidentRoutes(incidentService)
         }
     }
 }
+
+fun getImageUploadPath(imagefile: String) = "uploads/incidentsImages/$imagefile"

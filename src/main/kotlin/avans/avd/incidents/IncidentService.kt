@@ -1,5 +1,8 @@
 package avans.avd.incidents
 
+import java.nio.file.Files.deleteIfExists
+import kotlin.io.path.Path
+
 class IncidentService(
     private val incidentRepository: IncidentRepository<Long>,
 ) {
@@ -19,7 +22,11 @@ class IncidentService(
         val foundIncident = incidentRepository.findById(incidentId)
         return if (foundIncident != null) {
             incidentRepository.delete(foundIncident)
-            // todo: remove all images for this incident
+            // also remove all images for this incident
+            foundIncident.images.forEach { imagefile ->
+                val imageToDelete = Path(getImageUploadPath(imagefile))
+                deleteIfExists(imageToDelete)
+            }
             true
         } else false
     }

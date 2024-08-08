@@ -75,7 +75,8 @@ private fun User.toResponse(): UserResponse =
         id = this.id.toString(),
         username = this.username,
         email = this.email,
-        role = this.role
+        role = this.role,
+        avatar = "user${id}"
     )
 
 private fun UserRequest.toModel(): User =
