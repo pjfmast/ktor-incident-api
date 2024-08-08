@@ -17,6 +17,5 @@ data class User(
 enum class Role {
     USER,
     OFFICIAL,
-    ADMIN,
-    ANONYMOUS
+    ADMIN
 }
