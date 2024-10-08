@@ -12,8 +12,6 @@ enum class Priority {
 enum class Status { OPEN, ASSIGNED, DONE }
 
 data class Incident(
-    val id: Long = NEW_INCIDENT_ID,
-
     // the username of the user who reported this Incident
     val reportedBy: Long?,
 
@@ -31,6 +29,8 @@ data class Incident(
     val createdAt: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     val updatedAt: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     val completedAt: LocalDateTime? = null,
+
+    val id: Long = NEW_INCIDENT_ID
 ) {
     companion object {
         val NEW_INCIDENT_ID = 0L

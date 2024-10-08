@@ -8,12 +8,8 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class IncidentResponse (
-    val id: Long = NEW_INCIDENT_ID,
-
-    // the username of the user who issued this Incident
-    // Q. Should this be a user id?
-    val reportedBy: Long?,
+data class IncidentResponse(
+    val reportedBy: Long?, // user id of the user who reported this Incident
 
     val category: String,
     val description: String,
@@ -28,4 +24,6 @@ data class IncidentResponse (
     val createdAt: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     val updatedAt: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     val completedAt: LocalDateTime? = null,
+
+    val id: Long = NEW_INCIDENT_ID
 )

@@ -14,8 +14,7 @@ object FakeIncidentRepository : IncidentRepository<Long> {
     init {
         create(
             Incident(
-                Incident.NEW_INCIDENT_ID,
-                1 /*admin*/,
+                3 /*Anne*/,
                 "Traffic",
                 "Sink hole here. Dangerous situation! Quick fix needed.",
                 51.58677130730741,
@@ -26,7 +25,6 @@ object FakeIncidentRepository : IncidentRepository<Long> {
         )
         create(
             Incident(
-                Incident.NEW_INCIDENT_ID,
                 2 /*Henk*/,
                 "Street lights",
                 "At this corner 2 lights are broken",
@@ -37,7 +35,6 @@ object FakeIncidentRepository : IncidentRepository<Long> {
         )
         create(
             Incident(
-                Incident.NEW_INCIDENT_ID,
                 2 /*Henk*/,
                 "neighbourhood",
                 "noise disturbance from illegal party",
@@ -48,8 +45,7 @@ object FakeIncidentRepository : IncidentRepository<Long> {
         )
         create(
             Incident(
-                Incident.NEW_INCIDENT_ID,
-                3 /*Sophie*/,
+                3 /*Anne*/,
                 "Garbage dump",
                 "Some xtc lab dumped chemicals. ",
                 51.58907773104348,
@@ -106,7 +102,7 @@ object FakeIncidentRepository : IncidentRepository<Long> {
         return newIncident
     }
 
-    override suspend fun delete(entity: Incident): Boolean = incidents.removeIf { it.id == entity.id }
+    override suspend fun delete(id: Long): Boolean = incidents.removeIf { it.id == id }
 
     private fun update(incident: Incident): Incident {
         require(incidents.any { it.id == incident.id }) { "not an update: ${incident.id} does not exist" }

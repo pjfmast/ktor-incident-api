@@ -1,14 +1,14 @@
 package avans.avd.users
 
 object FakeUserRepository : UserRepository<Long> {
-    private var userId: Long = 0L
+    private var userId: Long = User.NEW_USER_ID
     private val users = mutableListOf<User>()
 
     // Seed the fake repository with some dummy data
     init {
-        create(User(User.NEW_USER_ID, "admin", "password", "admin@avans.nl", role = Role.ADMIN))
-        create(User(User.NEW_USER_ID, "Henk", "pwd", "henk@avans.nl", role = Role.USER))
-        create(User(User.NEW_USER_ID, "Sophie", "pwd", "sophie@breda.nl", role = Role.OFFICIAL))
+        create(User("admin", "password", "admin@avans.nl", role = Role.ADMIN))
+        create(User("Henk", "pwd", "henk@avans.nl", role = Role.USER))
+        create(User("Sophie", "pwd", "sophie@breda.nl", role = Role.OFFICIAL))
     }
 
 
@@ -35,7 +35,7 @@ object FakeUserRepository : UserRepository<Long> {
         return newUser
     }
 
-    override suspend fun delete(entity: User): Boolean = users.removeIf { it.id == entity.id }
+    override suspend fun delete(id: Long): Boolean = users.removeIf { it.id == id }
 
     private fun update(user: User): User {
         check(user.id > 0) { "Id must be greater than 0" }

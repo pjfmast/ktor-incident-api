@@ -5,7 +5,6 @@ import avans.avd.incidents.IncidentService
 import avans.avd.incidents.toResponse
 import avans.avd.utils.*
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*

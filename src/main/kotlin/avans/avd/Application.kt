@@ -27,11 +27,18 @@ fun Application.rootModule() {
     val incidentService = IncidentService(FakeIncidentRepository)
     val jwtService = JwtService(this, userService)
 
+    // see: https://insert-koin.io/docs/reference/koin-ktor/ktor/
+    // In Ktor we use 'install(Koin) {...}' instead of startKoin {...}
     install(Koin) {
+        // modules contain declarations of dependencies between services, resources, and repositories.
+        // By default, lazy creation. To apply eager creation, use createdAtStart = true
         modules(module(createdAtStart = true, fun Module.() {
-            single { userService }
-            single { jwtService }
-            single { incidentService }
+            // The single<T> {} will create a definition for a singleton object of type T
+            // and will return this same instance each time get() is called.
+            // The explicit type in <T> can be omitted.
+            single<UserService> { userService }
+            single<JwtService> { jwtService }
+            single<IncidentService> { incidentService }
         }))
     }
     install(ContentNegotiation) {

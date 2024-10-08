@@ -6,7 +6,6 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import java.util.*
 
@@ -36,7 +35,7 @@ class JwtService(
         val foundUser = userService.findByUsername(loginRequest.username)
 
         return if (foundUser != null && foundUser.password == loginRequest.password) {
-            createAccessToken(foundUser) // when check in jwt.io this signature can be entered in 'verify signature'
+            createAccessToken(foundUser) // when check in jwt.io the signature can be entered in 'verify signature'
         } else null
     }
 
@@ -53,7 +52,7 @@ class JwtService(
 
     // A credential is a set of properties for a server to authenticate a principal (here a JWTCredential)
     // A principal is an entity that can be authenticated (here a JWTPrincipal)
-    suspend fun customValidator(credential: JWTCredential): Principal? {
+    suspend fun customValidator(credential: JWTCredential): UserPrincipal? {
         val username = extractUsername(credential) ?: return null
         val foundUser = userService.findByUsername(username)
 
@@ -64,21 +63,11 @@ class JwtService(
         }
     }
 
-//    fun isAdminValidator(credential: JWTCredential): JWTPrincipal? {
-//        val username = extractUsername(credential)
-//        val foundUser = username?.let { userService::findByUsername }
-//        val role = extractRole(credential)
-//
-//        return foundUser?.let { user ->
-//            if (audienceMatches(credential)) {
-//                JWTPrincipal(credential.payload)
-//            } else null
-//        }
-//    }
 
     private fun audienceMatches(credential: JWTCredential): Boolean =
         credential.payload.audience.contains(jwtAudience)
 
+    // note when getting a claim of type String use claim.asString() instead of claim.toString()
     private fun extractUsername(credential: JWTCredential): String? =
         credential.payload.getClaim("username").asString()
 

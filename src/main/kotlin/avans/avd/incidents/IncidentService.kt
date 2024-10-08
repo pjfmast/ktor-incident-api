@@ -21,7 +21,7 @@ class IncidentService(
     suspend fun delete(incidentId: Long): Boolean {
         val foundIncident = incidentRepository.findById(incidentId)
         return if (foundIncident != null) {
-            incidentRepository.delete(foundIncident)
+            incidentRepository.delete(incidentId)
             // also remove all images for this incident
             foundIncident.images.forEach { imagefile ->
                 val imageToDelete = Path(getImageUploadPath(imagefile))

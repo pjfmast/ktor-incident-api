@@ -6,11 +6,16 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import java.io.File
 
+@Suppress("unused")
 fun Application.incidentsModule() {
     val incidentService: IncidentService by inject()
 
     routing {
-        staticFiles("api/incidents/images", File("uploads/incidentsImages"), "incident.png") {
+        staticFiles(
+            remotePath = "api/incidents/images",
+            dir = File("uploads/incidentsImages"),
+            index = "incident.png"
+        ) {
             default("incident.png")
         }
         route("/api/incidents") {
@@ -19,4 +24,4 @@ fun Application.incidentsModule() {
     }
 }
 
-fun getImageUploadPath(imagefile: String) = "uploads/incidentsImages/$imagefile"
+fun getImageUploadPath(imageFile: String) = "uploads/incidentsImages/$imageFile"

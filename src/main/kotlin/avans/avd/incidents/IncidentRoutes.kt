@@ -5,12 +5,12 @@ import avans.avd.users.Role
 import avans.avd.utils.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.*
 import java.io.File
 
 fun Route.incidentRoutes(
@@ -67,18 +67,22 @@ fun Route.incidentRoutes(
 
                             val extension: String = part.originalFileName?.split(".")?.last() ?: "png"
                             imageFileName = "incident${incidentId}-image$nextIncidentImageNr.$extension"
-                            val fileBytes = part.streamProvider().readBytes()
+                            val fileBytes = part.provider().toByteArray()
                             File(getImageUploadPath(imageFileName)).writeBytes(fileBytes)
                             incidentService.addImage(incidentId, imageFileName)
                         }
 
-                        else -> {}
+                        else                 -> {}
                     }
                     part.dispose()
                 }
                 call.respond(
                     HttpStatusCode.OK,
-                    "$imageFileDescription is uploaded for incident with id: ${incidentId} to ${getImageUploadPath(imageFileName)}"
+                    "$imageFileDescription is uploaded for incident with id: ${incidentId} to ${
+                        getImageUploadPath(
+                            imageFileName
+                        )
+                    }"
                 )
             }
         }
@@ -137,7 +141,7 @@ fun Route.incidentRoutes(
 
             val canModify = isQualifiedOfficial() || foundIncident.reportedBy == userId
             if (!canModify)
-                throw MissingRoleException()
+                throw MissingRoleException(listOf(Role.OFFICIAL, Role.ADMIN))
 
             val changedIncident = incidentRequest.toModel(incidentId, userId)
             incidentService.save(changedIncident)
@@ -179,17 +183,17 @@ private fun IncidentRequest.toModel(incidentId: Long, userId: Long?): Incident =
 
 fun Incident.toResponse(): IncidentResponse =
     IncidentResponse(
-        id = this.id,
         reportedBy = this.reportedBy,
+        category = this.category,
 
         description = this.description,
-        priority = this.priority,
-        category = this.category,
         latitude = this.latitude,
         longitude = this.longitude,
-        status = this.status,
         images = this.images,
+        priority = this.priority,
+        status = this.status,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
-        completedAt = this.completedAt
+        completedAt = this.completedAt,
+        id = this.id
     )

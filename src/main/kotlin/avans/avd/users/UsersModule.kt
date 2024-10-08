@@ -7,6 +7,7 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import java.io.File
 
+@Suppress("unused")
 fun Application.usersModule() {
     val userService: UserService by inject()
     val incidentService: IncidentService by inject()

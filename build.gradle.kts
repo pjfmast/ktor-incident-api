@@ -1,11 +1,12 @@
 val kotlin_version: String by project
 val logback_version: String by project
 val koin_version: String by project
+val ktor_version: String by project
 
 plugins {
-    kotlin("jvm") version "2.0.0"
-    id("io.ktor.plugin") version "2.3.12"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
+    kotlin("jvm") version "2.0.20"
+    id("io.ktor.plugin") version "3.0.0-rc-2"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.20"
 }
 
 group = "avans.avd"
@@ -33,7 +34,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
     // needed for class Incident
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
 
     implementation("io.insert-koin:koin-core:$koin_version")
     implementation("io.insert-koin:koin-ktor:$koin_version")
