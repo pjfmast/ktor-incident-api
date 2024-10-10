@@ -22,11 +22,9 @@ fun Route.userRoutes(
             user = userRequest.toModel()
         )
 
-        call.response.header(
-            name = "id",
-            value = createdUser.id.toString()
-        )
-        call.respond(HttpStatusCode.Created)
+        val userResponse = createdUser.toResponse()
+
+        call.respond(HttpStatusCode.Created, userResponse)
     }
 
     // Only ADMIN can get all Users
@@ -71,11 +69,11 @@ fun Route.userRoutes(
 
 private fun User.toResponse(): UserResponse =
     UserResponse(
-        id = this.id.toString(),
         username = this.username,
         email = this.email,
         role = this.role,
-        avatar = "user${id}"
+        avatar = "user${id}",
+        id = this.id.toString(),
     )
 
 private fun UserRequest.toModel(): User =
