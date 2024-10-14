@@ -2,6 +2,8 @@ val kotlin_version: String by project
 val logback_version: String by project
 val koin_version: String by project
 val ktor_version: String by project
+val exposedVersion: String by project
+val h2_version: String by project
 
 plugins {
     kotlin("jvm") version "2.0.20"
@@ -35,6 +37,13 @@ dependencies {
 
     // needed for class Incident
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+
+    // added for persistence with Exposed
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
+    implementation("com.h2database:h2:$h2_version")
 
     implementation("io.insert-koin:koin-core:$koin_version")
     implementation("io.insert-koin:koin-ktor:$koin_version")
