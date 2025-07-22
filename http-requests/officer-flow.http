@@ -36,8 +36,8 @@ Authorization: Bearer {{officerToken}}
 PATCH http://localhost:8080/api/incidents/{{incidentIdToPatch}}/RESOLVED
 Authorization: Bearer {{officerToken}}
 
-### Get incident with ID=1 and see the new status= RESOLVED
-GET http://localhost:8080/api/incidents/1
+### Get incident with same and see the new status= RESOLVED
+GET http://localhost:8080/api/incidents/{{incidentIdToPatch}}
 Authorization: Bearer {{officerToken}}
 
 ### Get paginated incidents list
