@@ -1,0 +1,53 @@
+### Login as existing user 'Henk' and save token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "Henk",
+  "password": "pwd"
+}
+
+> {%
+    client.global.set("userHenkToken", response.body.token);
+%}
+
+### GET information on this new logged-in user
+GET http://localhost:8080/api/users/me
+Authorization: Bearer {{userHenkToken}}
+
+### Report a new incident
+POST http://localhost:8080/api/incidents
+Content-Type: application/json
+Authorization: Bearer {{userHenkToken}}
+
+{
+  "category": "environment",
+  "description": "Electricity down in our street",
+  "latitude": 51.5907258900,
+  "longitude": 4.8148889134,
+  "priority": "CRITICAL"
+}
+
+> {%
+    client.global.set("newIncidentByHenk", response.body.id);
+%}
+
+### Get all my incidents
+GET http://localhost:8080/api/incidents/my-incidents
+Authorization: Bearer {{userHenkToken}}
+
+### Upload an image to incident 5
+POST http://localhost:8080/api/incidents/{{newIncidentByHenk}}/images
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+Authorization: Bearer {{userHenkToken}}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="image"; filename="electricity-down.jpeg"
+Content-Type: image/jpeg
+
+   < ./testimages/electricity-down.jpeg
+--WebAppBoundary--
+
+### Get all my incidents
+GET http://localhost:8080/api/incidents/my-incidents
+Authorization: Bearer {{userHenkToken}}

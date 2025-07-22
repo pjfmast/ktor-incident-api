@@ -1,0 +1,46 @@
+### Login as admin-user and save the adminToken for usage in other requests
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "Ron",
+  "password": "pwd"
+}
+
+> {%
+    client.global.set("officerToken", response.body.token);
+%}
+
+### GET information on authenticated user
+GET http://localhost:8080/api/users/me
+Authorization: Bearer {{officerToken}}
+
+
+### Get all reported incidents
+GET http://localhost:8080/api/incidents
+Authorization: Bearer {{officerToken}}
+
+### Get all incidents reported by user with ID=2 (Henk)
+GET http://localhost:8080/api/users/2/incidents
+Authorization: Bearer {{officerToken}}
+
+### Get incident with ID=1 and see the status=ASSIGNED
+GET http://localhost:8080/api/incidents/1
+Authorization: Bearer {{officerToken}}
+
+> {%
+    client.global.set("incidentIdToPatch", response.body.id);
+%}
+
+### PATCH the status of this incident to RESOLVED
+PATCH http://localhost:8080/api/incidents/{{incidentIdToPatch}}/RESOLVED
+Authorization: Bearer {{officerToken}}
+
+### Get incident with ID=1 and see the new status= RESOLVED
+GET http://localhost:8080/api/incidents/1
+Authorization: Bearer {{officerToken}}
+
+### Get paginated incidents list
+GET http://localhost:8080/api/incidents/paginated?page=2&pageSize=3
+Authorization: Bearer {{officerToken}}
+

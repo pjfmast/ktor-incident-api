@@ -1,0 +1,43 @@
+### Login as admin-user and save the adminToken for usage in other requests
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password"
+}
+
+> {%
+    client.global.set("adminToken", response.body.token);
+%}
+
+### GET information on authenticated user
+GET http://localhost:8080/api/users/me
+Authorization: Bearer {{adminToken}}
+
+### Get all users (Admin only)
+GET http://localhost:8080/api/users
+Authorization: Bearer {{adminToken}}
+
+### Get user with ID
+GET http://localhost:8080/api/users/1
+Authorization: Bearer {{adminToken}}
+
+### Update a user
+PUT http://localhost:8080/api/users/2
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "username": "updateduser",
+  "email": "updated@example.com"
+}
+
+### Get updated user again
+GET http://localhost:8080/api/users/2
+Authorization: Bearer {{adminToken}}
+
+### DELETE a user
+DELETE http://localhost:8080/api/users/2
+Authorization: Bearer {{adminToken}}
+

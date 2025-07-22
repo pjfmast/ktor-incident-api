@@ -9,6 +9,10 @@ class IncidentService(
     suspend fun findAll(): List<Incident> =
         incidentRepository.findAll()
 
+    suspend fun findAllPaginated(page: Int, pageSize: Int): Pair<List<Incident>, Long> {
+        return incidentRepository.findAllPaginated(page, pageSize)
+    }
+
     suspend fun findById(id: Long): Incident? =
         incidentRepository.findById(id)
 

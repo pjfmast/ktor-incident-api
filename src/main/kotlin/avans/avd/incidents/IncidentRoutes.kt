@@ -1,5 +1,7 @@
 package avans.avd.incidents
 
+import avans.avd.auth.UserPrincipal
+import avans.avd.core.PaginatedItemResponse
 import avans.avd.exceptions.MissingRoleException
 import avans.avd.users.Role
 import avans.avd.utils.*
@@ -16,8 +18,8 @@ import java.io.File
 fun Route.incidentRoutes(
     incidentService: IncidentService
 ) {
-    // Anyone may create an Incident, if anonymous the Incident cannot be edited later by the issuer.
-    // if an authenticated user creates an Incident, the userId identifies the user who created this Incident
+    // Anyone may create an Incident, if anonymous the issuer cannot edit the Incident later.
+    // When an authenticated user creates an Incident, the userId identifies the user who created this Incident
     authenticate(optional = true) {
         post {
             val incidentRequest = call.receive<IncidentRequest>()
@@ -31,9 +33,21 @@ fun Route.incidentRoutes(
                 name = "id",
                 value = createdIncident.id.toString()
             )
-            call.respond(HttpStatusCode.Created)
+            call.respond(HttpStatusCode.Created, createdIncident.toResponse())
         }
 
+        // any authenticated user can retrieve their own reported incidents
+        get("/my-incidents") {
+            // Get the current authenticated user from the principal
+            val userPrincipal = call.principal<UserPrincipal>()
+
+            userPrincipal?.let { user ->
+                val userId = user.user.id
+                val incidents = incidentService.findIncidentsReportedByUser(userId)
+
+                call.respond(incidents.map(Incident::toResponse))
+            } ?: call.respond(HttpStatusCode.Unauthorized, "Not authenticated")
+        }
     }
 
 
@@ -48,8 +62,8 @@ fun Route.incidentRoutes(
             val userId = call.userId()
 
 
-            // a qualified official can document an incident with pictures or any USER can document own reported Incidents
-            if (isQualifiedOfficial() || foundIncident.reportedBy == userId) {
+            // a qualified official can document an incident with images, or any USER can document their own reported Incidents
+            if (isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId)) {
                 var imageFileDescription = ""
                 var imageFileName = ""
 
@@ -87,12 +101,39 @@ fun Route.incidentRoutes(
             }
         }
 
+        // Only ADMIN or OFFICIAL may see all reported incidents
         get {
-            assertHasRole(Role.ADMIN)
+            assertIsQualified()
             val incidents = incidentService.findAll()
 
             call.respond(incidents.map(Incident::toResponse))
         }
+
+        get("/paginated") {
+            assertIsQualified()
+
+            // Extract page and pageSize from query parameters with defaults
+            val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+            val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 10
+
+            // Validate parameters
+            if (page <= 0 || pageSize <= 0) {
+                call.respond(HttpStatusCode.BadRequest, "Page and pageSize must be positive")
+                return@get
+            }
+
+            // Get paginated incidents
+            val (incidents, totalCount) = incidentService.findAllPaginated(page, pageSize)
+
+            // Map to response objects and wrap in PaginatedItemResponse
+            val paginatedResponse = PaginatedItemResponse(
+                data = incidents.map(Incident::toResponse),
+                totalCount = totalCount.toInt()
+            )
+
+            call.respond(paginatedResponse)
+        }
+
 
         get("/{incidentId}") {
             val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
@@ -104,7 +145,7 @@ fun Route.incidentRoutes(
             val userId = call.userId()
 
             // a qualified official may get any Incident, a normal USER can only get own reported Incidents
-            if (isQualifiedOfficial() || foundIncident.reportedBy == userId) {
+            if (isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId)) {
                 call.respond(foundIncident.toResponse())
             }
 
@@ -121,7 +162,7 @@ fun Route.incidentRoutes(
             val userId = call.userId()
 
             // a qualified official may get any Incident, a normal USER can only get own reported Incidents
-            if (isQualifiedOfficial() || foundIncident.reportedBy == userId) {
+            if (isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId)) {
                 incidentService.delete(incidentId)
                 call.respond(HttpStatusCode.OK, "Incident with id: $incidentId is deleted.")
             }
@@ -139,7 +180,7 @@ fun Route.incidentRoutes(
 
             val userId = call.userId()
 
-            val canModify = isQualifiedOfficial() || foundIncident.reportedBy == userId
+            val canModify = isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId)
             if (!canModify)
                 throw MissingRoleException(listOf(Role.OFFICIAL, Role.ADMIN))
 

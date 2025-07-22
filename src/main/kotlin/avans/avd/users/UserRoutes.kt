@@ -1,5 +1,6 @@
 package avans.avd.users
 
+import avans.avd.auth.UserPrincipal
 import avans.avd.incidents.Incident
 import avans.avd.incidents.IncidentService
 import avans.avd.incidents.toResponse
@@ -15,54 +16,82 @@ fun Route.userRoutes(
     userService: UserService,
     incidentService: IncidentService
 ) {
-    post {
-        val userRequest = call.receive<UserRequest>()
-
-        val createdUser = userService.save(
-            user = userRequest.toModel()
-        )
-
-        val userResponse = createdUser.toResponse()
-
-        call.respond(HttpStatusCode.Created, userResponse)
+    // anyone can register as a user:
+    route("/register") {
+        post {
+            val userRequest = call.receive<UserRequest>()
+            val createdUser = userService.save(
+                user = userRequest.toModel()
+            )
+            val userResponse = createdUser.toResponse()
+            call.respond(HttpStatusCode.Created, userResponse)
+        }
     }
 
-    // Only ADMIN can get all Users
+    // user requests for ADMIN only
     authenticate {
+        // Only ADMIN can get all Users
         get {
             assertHasRole(Role.ADMIN)
             val users = userService.findAll()
             call.respond(users.map(User::toResponse))
         }
-        route("/{id}") {
-            get {
-                val id: Long = call.parameters["id"]?.toLongOrNull()
-                    ?: throw BadRequestException("Invalid ID")
 
-                val foundUser = userService.findById(id)
-                    ?: throw NotFoundException("User with id $id not found")
+        // Only ADMIN can get any user
+        get("/{id}") {
+            assertHasRole(Role.ADMIN)
+            val id: Long = call.parameters["id"]?.toLongOrNull()
+                ?: throw BadRequestException("Invalid ID")
 
-                // an Admin may get any user
-                val isAdmin = call.userRole() == Role.ADMIN
-                if (!isAdmin && foundUser.username != call.userName())
-                    throw NotFoundException()
+            val foundUser = userService.findById(id)
+                ?: throw NotFoundException("User with id $id not found")
 
-                call.respond(foundUser.toResponse())
+            call.respond(foundUser.toResponse())
+        }
+
+        delete("/{id}") {
+            assertHasRole(Role.ADMIN)
+            val id: Long = call.parameters["id"]?.toLongOrNull()
+                ?: throw BadRequestException("Invalid ID")
+
+            val deleted = userService.delete(id)
+            if (deleted) {
+                call.respond(HttpStatusCode.NoContent, "User with id $id is deleted.")
+            } else {
+                throw NotFoundException("User with id $id not found")
             }
+        }
 
-            get("/incidents") {
-                val id: Long = call.parameters["id"]?.toLong()
-                    ?: return@get call.respond(HttpStatusCode.BadRequest)
+    }
 
-                val foundUser = userService.findById(id)
-                    ?: return@get call.respond(HttpStatusCode.NotFound)
+    // requests available for authenticated users:
+    authenticate {
+        // any authenticated user can retrieve the current user information
+        get("/me") {
+            // Get the current authenticated user from the principal
+            val userPrincipal = call.principal<UserPrincipal>()
 
-                if (!isQualifiedOfficial() && foundUser.id != call.userId())
-                    throw NotFoundException()
+            userPrincipal?.let {
+                // Return the user information (excluding sensitive data like password)
+                call.respond(it.user.toResponse())
+            } ?: call.respond(HttpStatusCode.Unauthorized, "Not authenticated")
+        }
 
-                val foundIncidentsOfUser = incidentService.findIncidentsReportedByUser(foundUser.id)
-                call.respond(foundIncidentsOfUser.map(Incident::toResponse))
-            }
+
+        // any qualified official can retrieve incidents reported by a user,
+        // other users can only retrieve their own reported incidents.
+        get("{id}/incidents") {
+            val id: Long = call.parameters["id"]?.toLong()
+                ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+            val foundUser = userService.findById(id)
+                ?: return@get call.respond(HttpStatusCode.NotFound)
+
+            if (!isQualifiedOfficial() && foundUser.id != call.userId())
+                throw NotFoundException()
+
+            val foundIncidentsOfUser = incidentService.findIncidentsReportedByUser(foundUser.id)
+            call.respond(foundIncidentsOfUser.map(Incident::toResponse))
         }
     }
 }

@@ -10,5 +10,5 @@ data class IncidentRequest (
     val latitude: Double,
     val longitude: Double,
 
-    val priority: Priority = Priority.Low
+    val priority: Priority = Priority.LOW
 )

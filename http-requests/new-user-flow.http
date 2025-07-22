@@ -1,0 +1,92 @@
+### Register a new user
+POST http://localhost:8080/api/users/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "testpass123",
+  "email": "test@example.com"
+}
+
+### Login as a new user and save token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "testpass123"
+}
+
+> {%
+    client.global.set("newUserToken", response.body.token);
+%}
+
+### GET information on this new logged-in user
+GET http://localhost:8080/api/users/me
+Authorization: Bearer {{newUserToken}}
+
+### Report a new incident and save id of new incident
+POST http://localhost:8080/api/incidents
+Content-Type: application/json
+Authorization: Bearer {{newUserToken}}
+
+{
+  "category": "traffic",
+  "description": "Broken traffic light",
+  "latitude": 51.5897,
+  "longitude": 4.7742,
+  "priority": "HIGH"
+}
+
+> {%
+    client.global.set("newIncidentByUser", response.body.id);
+%}
+
+### Get all my incidents
+GET http://localhost:8080/api/incidents/my-incidents
+Authorization: Bearer {{newUserToken}}
+
+### Update existing incident 5
+PUT http://localhost:8080/api/incidents/{{newIncidentByUser}}
+Content-Type: application/json
+Authorization: Bearer {{newUserToken}}
+
+{
+  "category": "traffic",
+  "description": "Update: Broken traffic light with damaged pole",
+  "latitude": 51.5897,
+  "longitude": 4.7742,
+  "priority": "CRITICAL"
+}
+
+### Get all my incidents
+GET http://localhost:8080/api/incidents/my-incidents
+Authorization: Bearer {{newUserToken}}
+
+### Upload an image to incident 5
+POST http://localhost:8080/api/incidents/5/images
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+Authorization: Bearer {{newUserToken}}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="image"; filename="broken-traffic-light.jpeg"
+Content-Type: image/jpeg
+
+   < ./testimages/broken-traffic-light.jpeg
+--WebAppBoundary--
+
+### Upload a second image to incident 5
+POST http://localhost:8080/api/incidents/5/images
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+Authorization: Bearer {{newUserToken}}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="image"; filename="broken-traffic-light-red.jpeg"
+Content-Type: image/jpeg
+
+   < ./testimages/broken-traffic-light-red.jpeg
+--WebAppBoundary--
+
+### Get all my incidents
+GET http://localhost:8080/api/incidents/my-incidents
+Authorization: Bearer {{newUserToken}}

@@ -44,7 +44,7 @@ class JwtService(
         .withAudience(jwtAudience)
         .withIssuer(jwtIssuer)
         .withClaim("id", foundUser.id)
-        // note when getting a claim of type String use claim.asString() instead of claim.toString()
+        // note when getting a claim of type String, use claim.asString() instead of claim.toString()
         .withClaim("username", foundUser.username)
         .withClaim("role", foundUser.role.toString())
         .withExpiresAt(Date(System.currentTimeMillis() + 3_600_000)) // with this the JWT is also unique after each new request
@@ -67,7 +67,7 @@ class JwtService(
     private fun audienceMatches(credential: JWTCredential): Boolean =
         credential.payload.audience.contains(jwtAudience)
 
-    // note when getting a claim of type String use claim.asString() instead of claim.toString()
+    // note when getting a claim of type String, use claim.asString() instead of claim.toString()
     private fun extractUsername(credential: JWTCredential): String? =
         credential.payload.getClaim("username").asString()
 

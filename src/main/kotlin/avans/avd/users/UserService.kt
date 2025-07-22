@@ -14,4 +14,7 @@ class UserService(
 
     suspend fun save(user: User): User =
         userRepository.save(user)
+
+    suspend fun delete(userId: Long): Boolean =
+        userRepository.delete(userId)
 }
