@@ -14,8 +14,8 @@ Content-Type: application/json
 ### GET information on this new logged-in user
 GET http://localhost:8080/api/users/me
 Authorization: Bearer {{userHenkToken}}
-### a normal USER cannot promote themself to OFFICIAL, but an ADMIN can
 
+### Try change role fails: a normal USER cannot promote themself to OFFICIAL, but an ADMIN can
 PUT http://localhost:8080/api/users/2/role
 Content-Type: application/json
 Authorization: Bearer {{userHenkToken}}
@@ -23,6 +23,7 @@ Authorization: Bearer {{userHenkToken}}
 {
   "role": "OFFICIAL"
 }
+
 ### Report a new incident
 POST http://localhost:8080/api/incidents
 Content-Type: application/json
@@ -47,6 +48,15 @@ Authorization: Bearer {{userHenkToken}}
 
 {
   "description": "Update: Electricity down in the whole block!"
+}
+
+### Try to change status of own incident fails: this restricted based on the business rules)
+PATCH http://localhost:8080/api/incidents/{{newIncidentByHenk}}/status
+Content-Type: application/json
+Authorization: Bearer {{userHenkToken}}
+
+{
+  "status": "RESOLVED"
 }
 
 ### Get all my incidents

@@ -16,6 +16,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.*
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.io.File
 import kotlin.time.Clock
@@ -198,30 +199,45 @@ fun Route.incidentRoutes(
                 description = updateRequest.description ?: foundIncident.description,
                 latitude = updateRequest.latitude ?: foundIncident.latitude,
                 longitude = updateRequest.longitude ?: foundIncident.longitude,
-                priority = updateRequest.priority ?: foundIncident.priority,
-                updatedAt = Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+                updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            )
+
+            val savedIncident = incidentService.save(updatedIncident)
+            call.respond(HttpStatusCode.OK, savedIncident.toResponse())
+        }
+        // Endpoint to change incident priority (ADMIN/OFFICIAL only)
+        patch("/{incidentId}/priority") {
+            assertHasRole(Role.ADMIN, Role.OFFICIAL)
+            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
+                ?: throw BadRequestException("Invalid ID")
+
+            val changePriorityRequest = call.receive<ChangePriorityRequest>()
+            val foundIncident = incidentService.findById(incidentId)
+                ?: throw NotFoundException()
+
+            val updatedIncident = foundIncident.copy(
+                priority = changePriorityRequest.priority,
+                updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
             )
 
             val savedIncident = incidentService.save(updatedIncident)
             call.respond(HttpStatusCode.OK, savedIncident.toResponse())
         }
 
-        patch("/{incidentId}/{status}") {
+        // Endpoint to change incident status (ADMIN/OFFICIAL only)
+        patch("/{incidentId}/status") {
             assertHasRole(Role.ADMIN, Role.OFFICIAL)
             val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
-            val status: Status = call.parameters["status"]
-                ?.let(Status::valueOf)
-                ?: throw BadRequestException("Invalid status")
-
+            val changeStatusRequest = call.receive<ChangeStatusRequest>()
             val foundIncident = incidentService.findById(incidentId)
                 ?: throw NotFoundException()
 
-            incidentService.changeStatus(foundIncident, status)
-
-            call.respond(HttpStatusCode.OK)
+            val updatedIncident = incidentService.changeStatus(foundIncident, changeStatusRequest.status)
+            call.respond(HttpStatusCode.OK, updatedIncident.toResponse())
         }
+
     }
 }
 
