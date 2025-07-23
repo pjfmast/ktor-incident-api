@@ -39,4 +39,3 @@ Authorization: Bearer {{adminToken}}
 ### DELETE a user
 DELETE http://localhost:8080/api/users/2
 Authorization: Bearer {{adminToken}}
-
