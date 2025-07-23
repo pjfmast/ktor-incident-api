@@ -8,10 +8,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class IncidentsTest {
+    // Todo fix this for Koin di
 
     @Test
     fun `list of incidents - happy path`() = testApplication {
-        client.get("/api/incident") {
+        client.get("/api/incidents") {
             authenticate(Role.ADMIN)
         }.apply {
             assertEquals(HttpStatusCode.OK, status)
@@ -20,9 +21,8 @@ class IncidentsTest {
 
     @Test
     fun `list of incidents - no access`() = testApplication {
-        client.get("/api/incident").apply {
+        client.get("/api/incidents").apply {
             assertEquals(HttpStatusCode.Unauthorized, status)
         }
     }
-
 }

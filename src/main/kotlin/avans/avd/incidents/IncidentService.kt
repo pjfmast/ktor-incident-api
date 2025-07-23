@@ -1,7 +1,10 @@
 package avans.avd.incidents
 
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import java.nio.file.Files.deleteIfExists
 import kotlin.io.path.Path
+import kotlin.time.Clock
 
 class IncidentService(
     private val incidentRepository: IncidentRepository<Long>,
@@ -35,10 +38,33 @@ class IncidentService(
         } else false
     }
 
-    suspend fun changeStatus(incident: Incident, status: Status): Incident =
-        incidentRepository.changeStatus(incident, status)
+    suspend fun changeStatus(incident: Incident, status: Status): Incident {
+        val updatedIncident = if (status == Status.RESOLVED) {
+            incident.copy(
+                status = status,
+                completedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            )
+        } else {
+            incident.copy(status = status)
+        }
 
-    suspend fun addImage(incidentId: Long, imageFileName: String) =
-        incidentRepository.addImage(incidentId, imageFileName)
+        return incidentRepository.save(updatedIncident)
+    }
+
+
+    suspend fun addImage(incidentId: Long, imageFileName: String): Incident {
+        val incident = incidentRepository.findById(incidentId)
+            ?: throw IllegalArgumentException("Incident not found: $incidentId")
+
+        // Business logic here: updating the updatedAt timestamp
+        val updatedIncident = incident.copy(
+            images = incident.images + imageFileName,
+            updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        )
+
+        // Use specialized repository method with prepared entity
+        return incidentRepository.save( updatedIncident)
+    }
+
 
 }

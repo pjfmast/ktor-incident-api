@@ -1,6 +1,0 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
-
-###
-GET http://0.0.0.0:8080/help

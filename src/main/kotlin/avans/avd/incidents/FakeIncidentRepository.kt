@@ -1,9 +1,6 @@
 package avans.avd.incidents
 
 import avans.avd.core.BaseInMemoryRepository
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock.System
 
 object FakeIncidentRepository : BaseInMemoryRepository<Incident>(), IncidentRepository<Long> {
     override val items = mutableListOf<Incident>()
@@ -68,28 +65,4 @@ object FakeIncidentRepository : BaseInMemoryRepository<Incident>(), IncidentRepo
         lngMax: Double
     ): List<Incident> = items.filter { it.isCoordinateInArea(latMin, latMax, lngMin, lngMax) }
 
-    override suspend fun changeStatus(incident: Incident, status: Status): Incident {
-        val changedIncident = if (status == Status.RESOLVED) {
-            incident.copy(
-                status = status,
-                completedAt = System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-            )
-        } else incident.copy(
-            status = status,
-        )
-
-        return save(changedIncident)
-    }
-
-    override suspend fun addImage(id: Long, imageFileName: String): Incident {
-        val incident = findById(id)
-        if (incident != null) {
-            imageId++
-            val updatedIncident = incident.copy(
-                images = incident.images + imageFileName
-            )
-            return save(updatedIncident)
-        }
-        throw IllegalArgumentException("Incident not found: $id")
-    }
 }

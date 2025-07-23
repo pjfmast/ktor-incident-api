@@ -25,6 +25,43 @@ Content-Type: application/json
 GET http://localhost:8080/api/users/me
 Authorization: Bearer {{newUserToken}}
 
+### Update logged-in user details
+PUT http://localhost:8080/api/users/me
+Content-Type: application/json
+Authorization: Bearer {{newUserToken}}
+
+{
+  "username": "kanariepiet",
+  "email": "piet@breda.nl",
+  "password": "pietIsOk"
+}
+
+### After an update of user, the user should login again with updated info and again save token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "kanariepiet",
+  "password": "pietIsOk"
+}
+
+> {%
+    client.global.set("newUserToken", response.body.token);
+%}
+
+### GET information on user with updated username and email
+GET http://localhost:8080/api/users/me
+Authorization: Bearer {{newUserToken}}
+
+### a normal USER cannot promote themself to OFFICIAL, but an ADMIN can
+PUT http://localhost:8080/api/users/2/role
+Content-Type: application/json
+Authorization: Bearer {{newUserToken}}
+
+{
+  "role": "OFFICIAL"
+}
+
 ### Report a new incident and save id of new incident
 POST http://localhost:8080/api/incidents
 Content-Type: application/json

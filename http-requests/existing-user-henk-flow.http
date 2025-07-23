@@ -14,7 +14,15 @@ Content-Type: application/json
 ### GET information on this new logged-in user
 GET http://localhost:8080/api/users/me
 Authorization: Bearer {{userHenkToken}}
+### a normal USER cannot promote themself to OFFICIAL, but an ADMIN can
 
+PUT http://localhost:8080/api/users/2/role
+Content-Type: application/json
+Authorization: Bearer {{userHenkToken}}
+
+{
+  "role": "OFFICIAL"
+}
 ### Report a new incident
 POST http://localhost:8080/api/incidents
 Content-Type: application/json
@@ -31,6 +39,15 @@ Authorization: Bearer {{userHenkToken}}
 > {%
     client.global.set("newIncidentByHenk", response.body.id);
 %}
+
+### Update reported incident
+PUT http://localhost:8080/api/incidents/{{newIncidentByHenk}}
+Content-Type: application/json
+Authorization: Bearer {{userHenkToken}}
+
+{
+  "description": "Update: Electricity down in the whole block!"
+}
 
 ### Get all my incidents
 GET http://localhost:8080/api/incidents/my-incidents

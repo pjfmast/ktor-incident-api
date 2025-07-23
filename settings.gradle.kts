@@ -6,5 +6,6 @@ dependencyResolutionManagement {
             from("io.ktor:ktor-version-catalog:3.2.2")
         }
     }
+    @Suppress("UnstableApiUsage")
     repositories { mavenCentral() }
 }

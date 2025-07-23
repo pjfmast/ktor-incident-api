@@ -20,20 +20,19 @@ GET http://localhost:8080/api/users
 Authorization: Bearer {{adminToken}}
 
 ### Get user with ID
-GET http://localhost:8080/api/users/1
+GET http://localhost:8080/api/users/2
 Authorization: Bearer {{adminToken}}
 
-### Update a user
-PUT http://localhost:8080/api/users/2
+### Update the role of user to OFFICIAL
+PUT http://localhost:8080/api/users/2/role
 Content-Type: application/json
 Authorization: Bearer {{adminToken}}
 
 {
-  "username": "updateduser",
-  "email": "updated@example.com"
+  "role": "OFFICIAL"
 }
 
-### Get updated user again
+### Get updated user again and see that the role is promoted to OFFICER
 GET http://localhost:8080/api/users/2
 Authorization: Bearer {{adminToken}}
 

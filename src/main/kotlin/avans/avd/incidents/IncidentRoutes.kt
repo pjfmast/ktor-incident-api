@@ -4,7 +4,10 @@ import avans.avd.auth.UserPrincipal
 import avans.avd.core.PaginatedItemResponse
 import avans.avd.exceptions.MissingRoleException
 import avans.avd.users.Role
-import avans.avd.utils.*
+import avans.avd.utils.assertHasRole
+import avans.avd.utils.assertIsQualified
+import avans.avd.utils.isQualifiedOfficial
+import avans.avd.utils.userId
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.auth.*
@@ -13,7 +16,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.*
+import kotlinx.datetime.toLocalDateTime
 import java.io.File
+import kotlin.time.Clock
 
 fun Route.incidentRoutes(
     incidentService: IncidentService
@@ -22,11 +27,11 @@ fun Route.incidentRoutes(
     // When an authenticated user creates an Incident, the userId identifies the user who created this Incident
     authenticate(optional = true) {
         post {
-            val incidentRequest = call.receive<IncidentRequest>()
+            val createIncidentRequest = call.receive<CreateIncidentRequest>()
             val userId = call.userId()
 
             val createdIncident = incidentService.save(
-                incidentRequest.toModel(Incident.NEW_INCIDENT_ID, userId)
+                createIncidentRequest.toModel(Incident.NEW_INCIDENT_ID, userId)
             )
 
             call.response.header(
@@ -161,7 +166,7 @@ fun Route.incidentRoutes(
 
             val userId = call.userId()
 
-            // a qualified official may get any Incident, a normal USER can only get own reported Incidents
+            // a qualified official may get any Incident, a normal USER can only get their own reported Incidents
             if (isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId)) {
                 incidentService.delete(incidentId)
                 call.respond(HttpStatusCode.OK, "Incident with id: $incidentId is deleted.")
@@ -170,24 +175,35 @@ fun Route.incidentRoutes(
             return@delete call.respond(HttpStatusCode.NotFound)
         }
 
+        // an incident can be updated by an official or user who reported the incident,
+        // but only if the incident is not resolved yet
         put("/{incidentId}") {
             val incidentId: Long = call.parameters["incidentId"]?.toLong()
                 ?: throw NotFoundException()
 
-            val incidentRequest = call.receive<IncidentRequest>()
+            val updateRequest = call.receive<UpdateIncidentRequest>()
             val foundIncident = incidentService.findById(incidentId)
                 ?: throw NotFoundException()
 
             val userId = call.userId()
 
-            val canModify = isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId)
+            val canModify = !foundIncident.isResolved
+                    && (isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId))
             if (!canModify)
                 throw MissingRoleException(listOf(Role.OFFICIAL, Role.ADMIN))
 
-            val changedIncident = incidentRequest.toModel(incidentId, userId)
-            incidentService.save(changedIncident)
+            // Apply updates only to fields that are provided in the request
+            val updatedIncident = foundIncident.copy(
+                category = updateRequest.category ?: foundIncident.category,
+                description = updateRequest.description ?: foundIncident.description,
+                latitude = updateRequest.latitude ?: foundIncident.latitude,
+                longitude = updateRequest.longitude ?: foundIncident.longitude,
+                priority = updateRequest.priority ?: foundIncident.priority,
+                updatedAt = Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+            )
 
-            call.respond(HttpStatusCode.OK)
+            val savedIncident = incidentService.save(updatedIncident)
+            call.respond(HttpStatusCode.OK, savedIncident.toResponse())
         }
 
         patch("/{incidentId}/{status}") {
@@ -209,7 +225,7 @@ fun Route.incidentRoutes(
     }
 }
 
-private fun IncidentRequest.toModel(incidentId: Long, userId: Long?): Incident =
+private fun CreateIncidentRequest.toModel(incidentId: Long, userId: Long?): Incident =
     Incident(
         id = incidentId,
         reportedBy = userId,

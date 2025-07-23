@@ -24,20 +24,30 @@ Authorization: Bearer {{officerToken}}
 GET http://localhost:8080/api/users/2/incidents
 Authorization: Bearer {{officerToken}}
 
-### Get incident with ID=1 and see the status=ASSIGNED
+### Get incident with ID=1 and see the priority=HIGH and status=ASSIGNED
 GET http://localhost:8080/api/incidents/1
 Authorization: Bearer {{officerToken}}
 
 > {%
-    client.global.set("incidentIdToPatch", response.body.id);
+    client.global.set("incidentIdToTestPutAndPatch", response.body.id);
 %}
 
+### Update pririty of incident with ID=1 to CRITICAL
+PUT http://localhost:8080/api/incidents/{{incidentIdToTestPutAndPatch}}
+Content-Type: application/json
+Authorization: Bearer {{officerToken}}
+
+{
+  "description": "Updated incident description",
+  "priority": "CRITICAL"
+}
+
 ### PATCH the status of this incident to RESOLVED
-PATCH http://localhost:8080/api/incidents/{{incidentIdToPatch}}/RESOLVED
+PATCH http://localhost:8080/api/incidents/{{incidentIdToTestPutAndPatch}}/RESOLVED
 Authorization: Bearer {{officerToken}}
 
 ### Get incident with same and see the new status= RESOLVED
-GET http://localhost:8080/api/incidents/{{incidentIdToPatch}}
+GET http://localhost:8080/api/incidents/{{incidentIdToTestPutAndPatch}}
 Authorization: Bearer {{officerToken}}
 
 ### Get paginated incidents list

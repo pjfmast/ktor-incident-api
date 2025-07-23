@@ -35,6 +35,9 @@ data class Incident(
     val isAnonymous: Boolean
         get() = reportedBy == null
 
+    val isResolved: Boolean
+        get() = status == Status.RESOLVED
+
     fun isReportedByCurrentUser(userID: Long?): Boolean = userID != null && !isAnonymous && reportedBy == userID
 
     fun isCoordinateInArea(latMin: Double, latMax: Double, lngMin: Double, lngMax: Double): Boolean {
