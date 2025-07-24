@@ -69,12 +69,16 @@ Content-Type: multipart/form-data; boundary=WebAppBoundary
 Authorization: Bearer {{userHenkToken}}
 
 --WebAppBoundary
-Content-Disposition: form-data; name="image"; filename="electricity-down.jpeg"
+Content-Disposition: form-data; name="image"; filename="img5_1.jpg"
 Content-Type: image/jpeg
 
-   < ./testimages/electricity-down.jpeg
+< ../testimages/img5_1.jpg
 --WebAppBoundary--
 
 ### Get all my incidents
 GET http://localhost:8080/api/incidents/my-incidents
+Authorization: Bearer {{userHenkToken}}
+
+### Get an image api/incidents/images
+GET http://localhost:8080/api/incidents/images/incident5-image1.jpg
 Authorization: Bearer {{userHenkToken}}

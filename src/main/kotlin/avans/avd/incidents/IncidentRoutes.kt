@@ -15,6 +15,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.cio.*
 import io.ktor.utils.io.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -70,40 +71,60 @@ fun Route.incidentRoutes(
 
             // a qualified official can document an incident with images, or any USER can document their own reported Incidents
             if (isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId)) {
-                var imageFileDescription = ""
-                var imageFileName = ""
+                // see: https://ktor.io/docs/server-requests.html#form_data
+                var fileDescription = ""
+                val uploadedFileNames = mutableListOf<String>() // List to track all uploaded filenames
+                var nextIncidentImageNr = foundIncident.images.size + 1 // Start with the next number
 
-                val multipartData = call.receiveMultipart()
+
+                var fileName = ""
+                val multipartData = call.receiveMultipart(formFieldLimit = 1024 * 1024 * 100)
+
 
                 multipartData.forEachPart { part ->
                     when (part) {
                         is PartData.FormItem -> {
-                            imageFileDescription = part.value
+                            fileDescription = part.value
                         }
 
                         is PartData.FileItem -> {
-                            val nextIncidentImageNr =
-                                foundIncident.images.size + 1 // images are not deleted (yet), but safer to increment the max imageNr?
+                            try {
+                                val extension: String = part.originalFileName?.split(".")?.last() ?: "png"
+                                fileName = "incident${incidentId}-image$nextIncidentImageNr.$extension"
 
-                            val extension: String = part.originalFileName?.split(".")?.last() ?: "png"
-                            imageFileName = "incident${incidentId}-image$nextIncidentImageNr.$extension"
-                            val fileBytes = part.provider().toByteArray()
-                            File(getImageUploadPath(imageFileName)).writeBytes(fileBytes)
-                            incidentService.addImage(incidentId, imageFileName)
+                                val file = File(getImageUploadPath(fileName))
+                                part.provider().copyAndClose(file.writeChannel())
+
+                                incidentService.addImage(incidentId, fileName)
+                                uploadedFileNames.add(fileName)
+
+                                nextIncidentImageNr++
+                            } catch (e: Exception) {
+                                println("Error processing file upload: ${e.message}")
+                                throw e
+                            }
                         }
 
                         else                 -> {}
                     }
                     part.dispose()
                 }
-                call.respond(
-                    HttpStatusCode.OK,
-                    "$imageFileDescription is uploaded for incident with id: ${incidentId} to ${
-                        getImageUploadPath(
-                            imageFileName
-                        )
-                    }"
-                )
+                if (uploadedFileNames.isEmpty()) {
+                    call.respond(HttpStatusCode.BadRequest, "No files were uploaded")
+                } else if (uploadedFileNames.size == 1) {
+                    call.respond(
+                        HttpStatusCode.OK,
+                        "${if (fileDescription.isBlank()) "Image" else fileDescription} is uploaded for incident with id: $incidentId to ${
+                            getImageUploadPath(uploadedFileNames[0])
+                        }"
+                    )
+                } else {
+                    call.respond(
+                        HttpStatusCode.OK,
+                        "${uploadedFileNames.size} images uploaded for incident with id: $incidentId"
+                    )
+                }
+
             }
         }
 
