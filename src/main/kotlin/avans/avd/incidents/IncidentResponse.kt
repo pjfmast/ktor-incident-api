@@ -1,7 +1,6 @@
 package avans.avd.incidents
 
 import avans.avd.incidents.Incident.Companion.NEW_INCIDENT_ID
-import avans.avd.utils.toDefaultLocalDateTime
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
@@ -26,25 +25,4 @@ data class IncidentResponse(
     val isAnonymous: Boolean,
 
     val id: Long = NEW_INCIDENT_ID
-) {
-    companion object {
-        fun fromIncident(incident: Incident): IncidentResponse {
-            return IncidentResponse(
-                id = incident.id,
-                reportedBy = incident.reportedBy,
-                category = incident.category,
-                description = incident.description,
-                latitude = incident.latitude,
-                longitude = incident.longitude,
-                priority = incident.priority,
-                status = incident.status,
-                images = incident.images,
-                createdAt = incident.createdAt.toDefaultLocalDateTime(),
-                updatedAt = incident.updatedAt.toDefaultLocalDateTime(),
-                completedAt = incident.completedAt?.toDefaultLocalDateTime(),
-                dueAt = incident.dueAt.toDefaultLocalDateTime(),
-                isAnonymous = incident.isAnonymous
-            )
-        }
-    }
-}
+)
