@@ -1,12 +1,9 @@
 package avans.avd.incidents
 
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
+import avans.avd.utils.currentInstant
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 enum class Priority {
     LOW, NORMAL, HIGH, CRITICAL
@@ -29,9 +26,9 @@ data class Incident(
     val images: List<String> = emptyList(),
 
     // metadata about creating, updating and completing the Incident report
-    val createdAt: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-    val updatedAt: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-    val completedAt: LocalDateTime? = null,
+    val createdAt: Instant = currentInstant(),
+    val updatedAt: Instant = currentInstant(),
+    val completedAt: Instant? = null,
 
     val id: Long = NEW_INCIDENT_ID
 ) {
@@ -41,29 +38,29 @@ data class Incident(
     val isResolved: Boolean
         get() = status == Status.RESOLVED
 
-    val dueAt: LocalDateTime
+    val dueAt: Instant
         get() {
-            // Convert LocalDateTime to Instant for duration calculations
-            val systemTz = TimeZone.currentSystemDefault()
-            val createdInstant = createdAt.toInstant(systemTz)
-
             // Apply the appropriate duration based on priority
-            val dueInstant = when (priority) {
-                Priority.LOW -> createdInstant.plus(42.days) // 6 weeks for low priority
-                Priority.NORMAL -> createdInstant.plus(7.days) // one week for normal priority
-                Priority.HIGH -> createdInstant.plus(3.days)
-                Priority.CRITICAL -> createdInstant.plus(12.hours)
+            return when (priority) {
+                Priority.LOW -> createdAt.plus(42.days)  // 6 weeks = 42 days
+                Priority.NORMAL -> createdAt.plus(7.days)  // 1 week = 7 days
+                Priority.HIGH -> createdAt.plus(3.days)
+                Priority.CRITICAL -> createdAt.plus(12.hours)
             }
-
-            // Convert back to LocalDateTime
-            return dueInstant.toLocalDateTime(systemTz)
         }
+
 
     fun isReportedByCurrentUser(userID: Long?): Boolean = userID != null && !isAnonymous && reportedBy == userID
 
     fun isCoordinateInArea(latMin: Double, latMax: Double, lngMin: Double, lngMax: Double): Boolean {
         return latitude in latMin..latMax && longitude in lngMin..lngMax
     }
+
+    fun isDueOrOverdue(): Boolean {
+        val now = currentInstant()
+        return !isResolved && now >= dueAt
+    }
+
 
     companion object {
         val NEW_INCIDENT_ID = 0L

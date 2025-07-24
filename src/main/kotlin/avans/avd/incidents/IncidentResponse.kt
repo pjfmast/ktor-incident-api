@@ -1,11 +1,9 @@
 package avans.avd.incidents
 
 import avans.avd.incidents.Incident.Companion.NEW_INCIDENT_ID
+import avans.avd.utils.toDefaultLocalDateTime
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
-import kotlin.time.Clock.System
 
 @Serializable
 data class IncidentResponse(
@@ -19,14 +17,34 @@ data class IncidentResponse(
 
     val images: List<String>,
 
-    val priority: Priority = Priority.LOW,
-    val status: Status = Status.REPORTED,
-    val createdAt: LocalDateTime = System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-    val updatedAt: LocalDateTime = System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-    val completedAt: LocalDateTime? = null,
-
-    // calculated property
+    val priority: Priority,
+    val status: Status,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
+    val completedAt: LocalDateTime?,
     val dueAt: LocalDateTime,
+    val isAnonymous: Boolean,
 
     val id: Long = NEW_INCIDENT_ID
-)
+) {
+    companion object {
+        fun fromIncident(incident: Incident): IncidentResponse {
+            return IncidentResponse(
+                id = incident.id,
+                reportedBy = incident.reportedBy,
+                category = incident.category,
+                description = incident.description,
+                latitude = incident.latitude,
+                longitude = incident.longitude,
+                priority = incident.priority,
+                status = incident.status,
+                images = incident.images,
+                createdAt = incident.createdAt.toDefaultLocalDateTime(),
+                updatedAt = incident.updatedAt.toDefaultLocalDateTime(),
+                completedAt = incident.completedAt?.toDefaultLocalDateTime(),
+                dueAt = incident.dueAt.toDefaultLocalDateTime(),
+                isAnonymous = incident.isAnonymous
+            )
+        }
+    }
+}

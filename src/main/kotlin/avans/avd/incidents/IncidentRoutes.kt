@@ -4,10 +4,7 @@ import avans.avd.auth.UserPrincipal
 import avans.avd.core.PaginatedItemResponse
 import avans.avd.exceptions.MissingRoleException
 import avans.avd.users.Role
-import avans.avd.utils.assertHasRole
-import avans.avd.utils.assertIsQualified
-import avans.avd.utils.isQualifiedOfficial
-import avans.avd.utils.userId
+import avans.avd.utils.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.auth.*
@@ -17,10 +14,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.cio.*
 import io.ktor.utils.io.*
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import java.io.File
-import kotlin.time.Clock
 
 fun Route.incidentRoutes(
     incidentService: IncidentService
@@ -114,7 +108,7 @@ fun Route.incidentRoutes(
                 } else if (uploadedFileNames.size == 1) {
                     call.respond(
                         HttpStatusCode.OK,
-                        "${if (fileDescription.isBlank()) "Image" else fileDescription} is uploaded for incident with id: $incidentId to ${
+                        "${fileDescription.ifBlank { "Image" }} is uploaded for incident with id: $incidentId to ${
                             getImageUploadPath(uploadedFileNames[0])
                         }"
                     )
@@ -171,7 +165,7 @@ fun Route.incidentRoutes(
 
             val userId = call.userId()
 
-            // a qualified official may get any Incident, a normal USER can only get own reported Incidents
+            // a qualified official may get any Incident, a normal USER can only get their own reported Incidents
             if (isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId)) {
                 call.respond(foundIncident.toResponse())
             }
@@ -220,7 +214,7 @@ fun Route.incidentRoutes(
                 description = updateRequest.description ?: foundIncident.description,
                 latitude = updateRequest.latitude ?: foundIncident.latitude,
                 longitude = updateRequest.longitude ?: foundIncident.longitude,
-                updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                updatedAt = currentInstant()
             )
 
             val savedIncident = incidentService.save(updatedIncident)
@@ -238,7 +232,7 @@ fun Route.incidentRoutes(
 
             val updatedIncident = foundIncident.copy(
                 priority = changePriorityRequest.priority,
-                updatedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                updatedAt = currentInstant()
             )
 
             val savedIncident = incidentService.save(updatedIncident)
@@ -279,18 +273,16 @@ fun Incident.toResponse(): IncidentResponse =
     IncidentResponse(
         reportedBy = this.reportedBy,
         category = this.category,
-
         description = this.description,
         latitude = this.latitude,
         longitude = this.longitude,
         images = this.images,
         priority = this.priority,
         status = this.status,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt,
-        completedAt = this.completedAt,
-        // calculated from createdAt and priority
-        dueAt = this.dueAt,
-
+        createdAt = this.createdAt.toDefaultLocalDateTime(),
+        updatedAt = this.updatedAt.toDefaultLocalDateTime(),
+        completedAt = this.completedAt?.toDefaultLocalDateTime(),
+        dueAt = this.dueAt.toDefaultLocalDateTime(),
+        isAnonymous = this.isAnonymous,
         id = this.id
     )
