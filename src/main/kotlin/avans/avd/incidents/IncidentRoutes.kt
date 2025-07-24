@@ -71,7 +71,7 @@ fun Route.incidentRoutes(
                 var nextIncidentImageNr = foundIncident.images.size + 1 // Start with the next number
 
 
-                var fileName = ""
+                var fileName: String
                 val multipartData = call.receiveMultipart(formFieldLimit = 1024 * 1024 * 100)
 
 
