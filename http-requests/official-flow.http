@@ -1,4 +1,4 @@
-### Login as admin-user and save the adminToken for usage in other requests
+### Login as a municipal official and save officialToken for usage in other requests
 POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
@@ -8,25 +8,25 @@ Content-Type: application/json
 }
 
 > {%
-    client.global.set("officerToken", response.body.token);
+    client.global.set("officialToken", response.body.token);
 %}
 
 ### GET information on authenticated user
 GET http://localhost:8080/api/users/me
-Authorization: Bearer {{officerToken}}
+Authorization: Bearer {{officialToken}}
 
 
 ### Get all reported incidents
 GET http://localhost:8080/api/incidents
-Authorization: Bearer {{officerToken}}
+Authorization: Bearer {{officialToken}}
 
 ### Get all incidents reported by user with ID=2 (Henk)
 GET http://localhost:8080/api/users/2/incidents
-Authorization: Bearer {{officerToken}}
+Authorization: Bearer {{officialToken}}
 
 ### Get incident with ID=1 and see the priority=HIGH and status=ASSIGNED
 GET http://localhost:8080/api/incidents/1
-Authorization: Bearer {{officerToken}}
+Authorization: Bearer {{officialToken}}
 
 > {%
     client.global.set("incidentIdToTestPutAndPatch", response.body.id);
@@ -35,7 +35,7 @@ Authorization: Bearer {{officerToken}}
 ### Change incident status to ASSIGNED
 PATCH http://localhost:8080/api/incidents/1/status
 Content-Type: application/json
-Authorization: Bearer {{officerToken}}
+Authorization: Bearer {{officialToken}}
 
 {
   "status": "ASSIGNED"
@@ -45,7 +45,7 @@ Authorization: Bearer {{officerToken}}
 ### PATCH the priority of this incident to CRITICAL
 PATCH http://localhost:8080/api/incidents/{{incidentIdToTestPutAndPatch}}/priority
 Content-Type: application/json
-Authorization: Bearer {{officerToken}}
+Authorization: Bearer {{officialToken}}
 
 {
   "priority": "CRITICAL"
@@ -55,7 +55,7 @@ Authorization: Bearer {{officerToken}}
 ### Change the status of this incident to RESOLVED
 PATCH http://localhost:8080/api/incidents/{{incidentIdToTestPutAndPatch}}/status
 Content-Type: application/json
-Authorization: Bearer {{officerToken}}
+Authorization: Bearer {{officialToken}}
 
 {
   "status": "RESOLVED"
@@ -64,9 +64,9 @@ Authorization: Bearer {{officerToken}}
 
 ### Get incident with same and see the new status= RESOLVED
 GET http://localhost:8080/api/incidents/{{incidentIdToTestPutAndPatch}}
-Authorization: Bearer {{officerToken}}
+Authorization: Bearer {{officialToken}}
 
 ### Get paginated incidents list
 GET http://localhost:8080/api/incidents/paginated?page=2&pageSize=3
-Authorization: Bearer {{officerToken}}
+Authorization: Bearer {{officialToken}}
 
