@@ -289,5 +289,8 @@ fun Incident.toResponse(): IncidentResponse =
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
         completedAt = this.completedAt,
+        // calculated from createdAt and priority
+        dueAt = this.dueAt,
+
         id = this.id
     )

@@ -32,7 +32,7 @@ Authorization: Bearer {{adminToken}}
   "role": "OFFICIAL"
 }
 
-### Get updated user again and see that the role is promoted to OFFICER
+### Get updated user again and see that the role is promoted to OFFICIAL
 GET http://localhost:8080/api/users/2
 Authorization: Bearer {{adminToken}}
 

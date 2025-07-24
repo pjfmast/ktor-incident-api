@@ -5,7 +5,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
-import kotlin.time.Clock.*
+import kotlin.time.Clock.System
 
 @Serializable
 data class IncidentResponse(
@@ -24,6 +24,9 @@ data class IncidentResponse(
     val createdAt: LocalDateTime = System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     val updatedAt: LocalDateTime = System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     val completedAt: LocalDateTime? = null,
+
+    // calculated property
+    val dueAt: LocalDateTime,
 
     val id: Long = NEW_INCIDENT_ID
 )
