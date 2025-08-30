@@ -82,21 +82,18 @@ fun Route.incidentRoutes(
                         }
 
                         is PartData.FileItem -> {
-                            try {
-                                val extension: String = part.originalFileName?.split(".")?.last() ?: "png"
-                                fileName = "incident${incidentId}-image$nextIncidentImageNr.$extension"
+                            println("Processing part: ${part.name}, filename: ${part.originalFileName}")
 
-                                val file = File(getImageUploadPath(fileName))
-                                part.provider().copyAndClose(file.writeChannel())
+                            val extension: String = part.originalFileName?.split(".")?.last() ?: "png"
+                            fileName = "incident${incidentId}-image$nextIncidentImageNr.$extension"
 
-                                incidentService.addImage(incidentId, fileName)
-                                uploadedFileNames.add(fileName)
+                            val file = File(getImageUploadPath(fileName))
+                            part.provider().copyAndClose(file.writeChannel())
 
-                                nextIncidentImageNr++
-                            } catch (e: Exception) {
-                                println("Error processing file upload: ${e.message}")
-                                throw e
-                            }
+                            incidentService.addImage(incidentId, fileName)
+                            uploadedFileNames.add(fileName)
+
+                            nextIncidentImageNr++
                         }
 
                         else                 -> {}

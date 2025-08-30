@@ -10,6 +10,12 @@ import java.io.File
 fun Application.incidentsModule() {
     val incidentService: IncidentService by inject()
 
+    // Ensure the upload directory exists at application startup
+    val uploadsDir = File("uploads/incidentsImages")
+    if (!uploadsDir.exists()) {
+        uploadsDir.mkdirs()
+    }
+
     routing {
         staticFiles(
             remotePath = "api/incidents/images",

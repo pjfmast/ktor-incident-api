@@ -14,7 +14,7 @@ abstract class BaseInMemoryRepository<T> : CrudRepository<T, Long> {
     protected abstract val items: MutableList<T>
     protected abstract var currentId: Long
     
-    // Abstract functies voor entity manipulatie
+    // Abstract functions for entity manipulation
     protected abstract fun copyWithNewId(entity: T, id: Long): T
     protected abstract fun getId(entity: T): Long
     

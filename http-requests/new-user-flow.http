@@ -105,7 +105,7 @@ Content-Type: multipart/form-data; boundary=WebAppBoundary
 Authorization: Bearer {{newUserToken}}
 
 --WebAppBoundary
-Content-Disposition: form-data; name="image1"; filename="broken-traffic-light.jpeg"
+Content-Disposition: form-data; name="image"; filename="broken-traffic-light.jpeg"
 Content-Type: image/jpeg
 
 < ../testimages/broken-traffic-light.jpeg

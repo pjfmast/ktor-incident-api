@@ -7,10 +7,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AuthTest {
-
     @Test
     fun `login bad password`() = testApplication {
-        client.post("/api/auth") {
+        application {
+            installTestModules()
+        }
+
+        client.post("/api/auth/login") {
             contentType(ContentType.Application.Json)
             setBody("{\"username\":\"Henk\",\"password\":\"pwd0\"}")
         }.apply {
@@ -20,12 +23,15 @@ class AuthTest {
 
     @Test
     fun `login happy path`() = testApplication {
-        client.post("/api/auth") {
+        application {
+            installTestModules()
+        }
+
+        client.post("/api/auth/login") {
             contentType(ContentType.Application.Json)
             setBody("{\"username\":\"Henk\",\"password\":\"pwd\"}")
         }.apply {
             assertEquals(HttpStatusCode.OK, status)
         }
     }
-
 }
