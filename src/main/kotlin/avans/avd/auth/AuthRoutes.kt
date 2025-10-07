@@ -7,6 +7,7 @@ import io.ktor.server.routing.*
 
 fun Route.authRoute(jwtService: JwtService) {
     post("/login") {
+        // note: call.receive<> consumes the request body so cannot be called twice.
         val loginRequest = call.receive<LoginRequest>()
 
         val token = jwtService.authenticate(loginRequest)

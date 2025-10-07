@@ -1,13 +1,12 @@
 val kotlin_version: String by project
 val logback_version: String by project
-val koin_version: String by project
 val exposedVersion: String by project
 val h2_version: String by project
 
 plugins {
-    kotlin("jvm") version "2.2.10"
-    id("io.ktor.plugin") version "3.2.3"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.10"
+    kotlin("jvm") version "2.2.20"
+    id("io.ktor.plugin") version "3.3.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
 }
 
 group = "avans.avd"
@@ -16,11 +15,13 @@ version = "0.0.1"
 application {
     mainClass.set("avans.avd.ApplicationKt")
 
-    val isDevelopment: Boolean = project.ext.has("development")
+//    val isDevelopment: Boolean = project.ext.has("development")
+    val isDevelopment = providers.gradleProperty("development").isPresent
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
 kotlin {
+    jvmToolchain(21)
     compilerOptions {
         optIn.add("kotlin.time.ExperimentalTime")
     }
@@ -46,10 +47,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
     implementation("com.h2database:h2:$h2_version")
 
-    implementation("io.insert-koin:koin-core:$koin_version")
-    implementation("io.insert-koin:koin-ktor:$koin_version")
-    implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
 
-    testImplementation("io.ktor:ktor-server-test-host-jvm")
+    testImplementation(ktorLibs.server.testHost)
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }

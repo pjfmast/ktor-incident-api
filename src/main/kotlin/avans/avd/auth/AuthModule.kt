@@ -2,12 +2,9 @@ package avans.avd.auth
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-import org.koin.ktor.ext.inject
 
 @Suppress("unused")
-fun Application.authModule() {
-    val jwtService: JwtService by inject()
-
+fun Application.authModule(jwtService: JwtService) {
     configureSecurity(jwtService)
 
     routing {
