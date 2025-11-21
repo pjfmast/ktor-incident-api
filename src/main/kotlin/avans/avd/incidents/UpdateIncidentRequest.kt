@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UpdateIncidentRequest(
-    val category: String? = null,
+    val category: Category? = null,
     val description: String? = null,
     val latitude: Double? = null,
     val longitude: Double? = null,

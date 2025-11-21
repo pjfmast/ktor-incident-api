@@ -49,10 +49,9 @@ fun Route.incidentRoutes(
                 call.respond(incidents.map(Incident::toResponse))
             } ?: call.respond(HttpStatusCode.Unauthorized, "Not authenticated")
         }
-    }
 
 
-    authenticate {
+
         post("/{incidentId}/images") {
             val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
@@ -62,62 +61,59 @@ fun Route.incidentRoutes(
 
             val userId = call.userId()
 
-
-            // a qualified official can document an incident with images, or any USER can document their own reported Incidents
-            if (isQualifiedOfficial() || foundIncident.isReportedByCurrentUser(userId)) {
-                // see: https://ktor.io/docs/server-requests.html#form_data
-                var fileDescription = ""
-                val uploadedFileNames = mutableListOf<String>() // List to track all uploaded filenames
-                var nextIncidentImageNr = foundIncident.images.size + 1 // Start with the next number
+            var fileDescription = ""
+            val uploadedFileNames = mutableListOf<String>() // List to track all uploaded filenames
+            var nextIncidentImageNr = foundIncident.images.size + 1 // Start with the next number
 
 
-                var fileName: String
-                val multipartData = call.receiveMultipart(formFieldLimit = 1024 * 1024 * 100)
+            var fileName: String
+            val multipartData = call.receiveMultipart(formFieldLimit = 1024 * 1024 * 100)
 
 
-                multipartData.forEachPart { part ->
-                    when (part) {
-                        is PartData.FormItem -> {
-                            fileDescription = part.value
-                        }
-
-                        is PartData.FileItem -> {
-                            println("Processing part: ${part.name}, filename: ${part.originalFileName}")
-
-                            val extension: String = part.originalFileName?.split(".")?.last() ?: "png"
-                            fileName = "incident${incidentId}-image$nextIncidentImageNr.$extension"
-
-                            val file = File(getImageUploadPath(fileName))
-                            part.provider().copyAndClose(file.writeChannel())
-
-                            incidentService.addImage(incidentId, fileName)
-                            uploadedFileNames.add(fileName)
-
-                            nextIncidentImageNr++
-                        }
-
-                        else                 -> {}
+            multipartData.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> {
+                        fileDescription = part.value
                     }
-                    part.dispose()
-                }
-                if (uploadedFileNames.isEmpty()) {
-                    call.respond(HttpStatusCode.BadRequest, "No files were uploaded")
-                } else if (uploadedFileNames.size == 1) {
-                    call.respond(
-                        HttpStatusCode.OK,
-                        "${fileDescription.ifBlank { "Image" }} is uploaded for incident with id: $incidentId to ${
-                            getImageUploadPath(uploadedFileNames[0])
-                        }"
-                    )
-                } else {
-                    call.respond(
-                        HttpStatusCode.OK,
-                        "${uploadedFileNames.size} images uploaded for incident with id: $incidentId"
-                    )
-                }
 
+                    is PartData.FileItem -> {
+                        println("Processing part: ${part.name}, filename: ${part.originalFileName}")
+
+                        val extension: String = part.originalFileName?.split(".")?.last() ?: "png"
+                        fileName = "incident${incidentId}-image$nextIncidentImageNr.$extension"
+
+                        val file = File(getImageUploadPath(fileName))
+                        part.provider().copyAndClose(file.writeChannel())
+
+                        incidentService.addImage(incidentId, fileName)
+                        uploadedFileNames.add(fileName)
+
+                        nextIncidentImageNr++
+                    }
+
+                    else -> {}
+                }
+                part.dispose()
+            }
+            if (uploadedFileNames.isEmpty()) {
+                call.respond(HttpStatusCode.BadRequest, "No files were uploaded")
+            } else if (uploadedFileNames.size == 1) {
+                call.respond(
+                    HttpStatusCode.OK,
+                    "${fileDescription.ifBlank { "Image" }} is uploaded for incident with id: $incidentId to ${
+                        getImageUploadPath(uploadedFileNames[0])
+                    }"
+                )
+            } else {
+                call.respond(
+                    HttpStatusCode.OK,
+                    "${uploadedFileNames.size} images uploaded for incident with id: $incidentId"
+                )
             }
         }
+    }
+
+    authenticate {
 
         // Only ADMIN or OFFICIAL may see all reported incidents
         get {

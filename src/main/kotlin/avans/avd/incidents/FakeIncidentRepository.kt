@@ -15,7 +15,7 @@ object FakeIncidentRepository : BaseInMemoryRepository<Incident>(), IncidentRepo
         create(
             Incident(
                 3, /*Anne*/
-                "Traffic",
+                Category.TRAFFIC,
                 "Sink hole here. Dangerous situation! Quick fix needed.",
                 51.58677130730741,
                 4.808487370673,
@@ -26,7 +26,7 @@ object FakeIncidentRepository : BaseInMemoryRepository<Incident>(), IncidentRepo
         create(
             Incident(
                 2 /*Henk*/,
-                "Street lights",
+                Category.COMMUNAL,
                 "At this corner 2 lights are broken",
                 51.59051650746655,
                 4.812002566502519,
@@ -36,7 +36,7 @@ object FakeIncidentRepository : BaseInMemoryRepository<Incident>(), IncidentRepo
         create(
             Incident(
                 2 /*Henk*/,
-                "Neighbourhood",
+                Category.COMMUNAL,
                 "noise disturbance from illegal party",
                 51.58218477578439,
                 4.835727885428926,
@@ -46,7 +46,7 @@ object FakeIncidentRepository : BaseInMemoryRepository<Incident>(), IncidentRepo
         create(
             Incident(
                 3 /*Anne*/,
-                "Garbage dump",
+                Category.ENVIRONMENT,
                 "Some xtc lab dumped chemicals. ",
                 51.58907773104348,
                 4.80552621192238,

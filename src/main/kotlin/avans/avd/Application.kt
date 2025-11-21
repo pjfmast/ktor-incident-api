@@ -11,7 +11,10 @@ import avans.avd.users.usersModule
 import configureStatusPages
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.http.content.staticFiles
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.routing.routing
+import java.io.File
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -34,6 +37,9 @@ fun Application.module() {
     authModule(jwtService)
     incidentsModule(incidentService)
     usersModule(userService, incidentService)
+
+    routing {
+        staticFiles("/uploads", File("uploads"))}
 }
 
 
