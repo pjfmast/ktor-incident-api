@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 data class IncidentResponse(
     val reportedBy: Long?, // user id of the user who reported this Incident
 
-    val category: String,
+    val category: Category,
     val description: String,
 
     val latitude: Double,

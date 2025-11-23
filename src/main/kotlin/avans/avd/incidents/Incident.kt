@@ -11,11 +11,15 @@ enum class Priority {
 
 enum class Status { REPORTED, ASSIGNED, RESOLVED }
 
+enum class Category{
+    CRIME, ENVIRONMENT, COMMUNAL, TRAFFIC, OTHER
+}
+
 data class Incident(
     // the username of the user who reported this Incident
     val reportedBy: Long?,
 
-    val category: String,
+    val category: Category,
     val description: String,
 
     val latitude: Double,

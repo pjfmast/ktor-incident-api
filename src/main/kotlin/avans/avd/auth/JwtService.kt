@@ -44,8 +44,6 @@ class JwtService(
         .withAudience(jwtAudience)
         .withIssuer(jwtIssuer)
         .withClaim("id", foundUser.id)
-        // note when getting a claim of type String, use claim.asString() instead of claim.toString()
-        .withClaim("username", foundUser.username)
         .withClaim("role", foundUser.role.toString())
         .withExpiresAt(Date(System.currentTimeMillis() + 3_600_000)) // with this the JWT is also unique after each new request
         .sign(Algorithm.HMAC256(jwtSecret))
@@ -53,8 +51,8 @@ class JwtService(
     // A credential is a set of properties for a server to authenticate a principal (here a JWTCredential)
     // A principal is an entity that can be authenticated (here a JWTPrincipal)
     suspend fun customValidator(credential: JWTCredential): UserPrincipal? {
-        val username = extractUsername(credential) ?: return null
-        val foundUser = userService.findByUsername(username)
+        val userId = credential.payload.getClaim("id").asLong() ?: return null
+        val foundUser = userService.findById(userId)
 
         return foundUser?.let { user ->
             if (audienceMatches(credential)) {
