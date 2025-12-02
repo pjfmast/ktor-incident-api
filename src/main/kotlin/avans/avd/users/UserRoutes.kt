@@ -5,6 +5,7 @@ import avans.avd.incidents.Incident
 import avans.avd.incidents.IncidentService
 import avans.avd.incidents.toResponse
 import avans.avd.utils.assertHasRole
+import avans.avd.utils.assertIsQualified
 import avans.avd.utils.isQualifiedOfficial
 import avans.avd.utils.userId
 import io.ktor.http.*
@@ -39,9 +40,9 @@ fun Route.userRoutes(
             call.respond(users.map(User::toResponse))
         }
 
-        // Only ADMIN can get any user
+        // Only ADMIN or an Official can get a specific user
         get("/{id}") {
-            assertHasRole(Role.ADMIN)
+            assertIsQualified()
             val id: Long = call.parameters["id"]?.toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
