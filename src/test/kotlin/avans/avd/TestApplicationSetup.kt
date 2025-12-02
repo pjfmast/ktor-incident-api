@@ -21,7 +21,7 @@ fun Application.installTestModules() {
     val jwtService = JwtService(
         "my secret",
         "http://localhost",
-        "my-audience",
+        "ktor-incident-api",
         "my realm",
         userService
     )

@@ -33,7 +33,7 @@ Authorization: Bearer {{officialToken}}
 %}
 
 ### Change incident status to ASSIGNED
-PATCH http://localhost:8080/api/incidents/1/status
+PATCH http://localhost:8080/api/incidents/2/status
 Content-Type: application/json
 Authorization: Bearer {{officialToken}}
 
