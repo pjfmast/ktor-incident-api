@@ -53,6 +53,62 @@ object FakeIncidentRepository : BaseInMemoryRepository<Incident>(), IncidentRepo
                 Priority.HIGH
             )
         )
+        // Newly added realistic incidents around Breda (within ~3km radius of 51.5898, 4.7832)
+        create(
+            Incident(
+                7 /*Bram*/,
+                Category.COMMUNAL,
+                "Loose paving stones causing trips near playground",
+                51.5921,
+                4.7789,
+                Priority.NORMAL,
+                Status.REPORTED
+            )
+        )
+        create(
+            Incident(
+                8 /*Fatima*/,
+                Category.TRAFFIC,
+                "Pothole forming at intersection; cyclists swerving to avoid it",
+                51.5853,
+                4.7897,
+                Priority.HIGH,
+                Status.ASSIGNED
+            )
+        )
+        create(
+            Incident(
+                9 /*Lotte*/,
+                Category.ENVIRONMENT,
+                "Illegal dumping: several garbage bags in the bushes",
+                51.5945,
+                4.7923,
+                Priority.NORMAL,
+                Status.REPORTED
+            )
+        )
+        create(
+            Incident(
+                null /*anonymous*/,
+                Category.CRIME,
+                "Bike theft attempt reported by neighbors last night",
+                51.5839,
+                4.7752,
+                Priority.LOW,
+                Status.REPORTED
+            )
+        )
+        create(
+            Incident(
+                null /*anonymous*/,
+                Category.OTHER,
+                "Graffiti on underpass wall freshly painted over but still visible",
+                51.5884,
+                4.8011,
+                Priority.LOW,
+                Status.RESOLVED
+            )
+        )
     }
     // IncidentRepository-specific functionality:
     override suspend fun findIncidentsForUser(userID: Long): List<Incident> =

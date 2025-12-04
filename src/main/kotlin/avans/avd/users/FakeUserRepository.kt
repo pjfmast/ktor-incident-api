@@ -47,6 +47,25 @@ object FakeUserRepository : BaseInMemoryRepository<User>(), UserRepository<Long>
             email = "ron@gemeentebreda.nl",
             role = Role.OFFICIAL
         ))
+        // Newly added realistic local users (will get ids 7, 8 and 9 respectively)
+        create(User(
+            username = "Bram",
+            password = "pwd",
+            email = "bram@ginneken.nl",
+            role = Role.USER
+        ))
+        create(User(
+            username = "Fatima",
+            password = "pwd",
+            email = "fatima@princenhage.nl",
+            role = Role.USER
+        ))
+        create(User(
+            username = "Lotte",
+            password = "pwd",
+            email = "lotte@wierickerschans.nl",
+            role = Role.USER
+        ))
     }
 
     // UserRepository-specific functionality
