@@ -12,7 +12,7 @@ suspend fun HttpRequestBuilder.authenticate(role: Role) {
     val jwtService = JwtService(
         "my secret",
         "http://localhost",
-        "my-audience",
+        "ktor-incident-api",
         "my realm",
         userService
     )

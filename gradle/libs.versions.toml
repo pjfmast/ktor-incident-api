@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 logback = "1.5.21"
 datetime = "0.7.1"
 exposed = "1.0.0-rc-4"

@@ -109,6 +109,51 @@ object FakeIncidentRepository : BaseInMemoryRepository<Incident>(), IncidentRepo
                 Status.RESOLVED
             )
         )
+        // Additional incidents reported by existing official Ron (id = 6)
+        create(
+            Incident(
+                6 /*Ron - OFFICIAL*/,
+                Category.TRAFFIC,
+                "Traffic light stuck on red causing delays at small junction",
+                51.5902,
+                4.7841,
+                Priority.HIGH,
+                Status.ASSIGNED
+            )
+        )
+        create(
+            Incident(
+                6 /*Ron - OFFICIAL*/,
+                Category.COMMUNAL,
+                "Streetlight out along park path; dark spot reported by residents",
+                51.5876,
+                4.7805,
+                Priority.NORMAL,
+                Status.REPORTED
+            )
+        )
+        create(
+            Incident(
+                6 /*Ron - OFFICIAL*/,
+                Category.ENVIRONMENT,
+                "Fallen branch blocking part of the bike lane; cleared by contractor",
+                51.5930,
+                4.7872,
+                Priority.NORMAL,
+                Status.RESOLVED
+            )
+        )
+        create(
+            Incident(
+                6 /*Ron - OFFICIAL*/,
+                Category.OTHER,
+                "Damaged yield sign at side street; pole bent, sign still readable",
+                51.5869,
+                4.7920,
+                Priority.LOW,
+                Status.REPORTED
+            )
+        )
     }
     // IncidentRepository-specific functionality:
     override suspend fun findIncidentsForUser(userID: Long): List<Incident> =

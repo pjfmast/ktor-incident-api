@@ -1,5 +1,3 @@
-@Suppress("DSL_SCOPE_VIOLATION")
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
@@ -20,7 +18,6 @@ application {
 kotlin {
     jvmToolchain(21)
     compilerOptions {
-        optIn.add("kotlin.time.ExperimentalTime")
     }
 }
 
