@@ -3,7 +3,7 @@ POST http://localhost:8080/api/incidents
 Content-Type: application/json
 
 {
-  "category": "Crime",
+  "category": "CRIME",
   "description": "drugs dealing",
   "latitude": 51.5888,
   "longitude": 4.7743,

@@ -1,5 +1,6 @@
 package avans.avd
 
+import avans.avd.auth.JwtConfig
 import avans.avd.auth.JwtService
 import avans.avd.auth.authModule
 import avans.avd.incidents.FakeIncidentRepository
@@ -11,10 +12,17 @@ import avans.avd.users.usersModule
 import configureStatusPages
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
-import io.ktor.server.http.content.staticFiles
+import io.ktor.server.config.*
+import io.ktor.server.http.content.*
 import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.routing.routing
+import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import java.io.File
+
+@Serializable
+data class AppConfig(
+    val jwt: JwtConfig
+)
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -27,7 +35,8 @@ fun Application.module() {
 
     val userService = UserService(FakeUserRepository)
     val incidentService = IncidentService(FakeIncidentRepository)
-    val jwtService = JwtService(this, userService)
+    val appConfig = environment.config.getAs<AppConfig>()
+    val jwtService = JwtService(appConfig.jwt, userService)
 
     install(ContentNegotiation) {
         json()

@@ -43,7 +43,7 @@ fun Route.userRoutes(
         // Only ADMIN or an Official can get a specific user
         get("/{id}") {
             assertIsQualified()
-            val id: Long = call.parameters["id"]?.toLongOrNull()
+            val id: Long = call.requirePathParameter("id").toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
             val foundUser = userService.findById(id)
@@ -56,7 +56,7 @@ fun Route.userRoutes(
 
         put("/{id}/role") {
             assertHasRole(Role.ADMIN)
-            val id: Long = call.parameters["id"]?.toLongOrNull()
+            val id: Long = call.requirePathParameter("id").toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
             val roleRequest = call.receive<RoleUpdateRequest>()
@@ -70,7 +70,7 @@ fun Route.userRoutes(
 
         delete("/{id}") {
             assertHasRole(Role.ADMIN)
-            val id: Long = call.parameters["id"]?.toLongOrNull()
+            val id: Long = call.requirePathParameter("id").toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
             val deleted = userService.delete(id)
@@ -131,7 +131,7 @@ fun Route.userRoutes(
         // any qualified official can retrieve incidents reported by a user,
         // other users can only retrieve their own reported incidents.
         get("{id}/incidents") {
-            val id: Long = call.parameters["id"]?.toLong()
+            val id: Long = call.requirePathParameter("id").toLongOrNull()
                 ?: return@get call.respond(HttpStatusCode.BadRequest)
 
             val foundUser = userService.findById(id)
@@ -164,4 +164,3 @@ private fun CreateUserRequest.toModel(): User =
         avatar = this.avatar,
         role = Role.USER,
     )
-

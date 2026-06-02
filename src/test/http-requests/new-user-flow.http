@@ -68,7 +68,7 @@ Content-Type: application/json
 Authorization: Bearer {{newUserToken}}
 
 {
-  "category": "traffic",
+  "category": "TRAFFIC",
   "description": "Broken traffic light",
   "latitude": 51.5897,
   "longitude": 4.7742,
@@ -89,7 +89,7 @@ Content-Type: application/json
 Authorization: Bearer {{newUserToken}}
 
 {
-  "category": "traffic",
+  "category": "TRAFFIC",
   "description": "Update: Broken traffic light with damaged pole",
   "latitude": 51.5897,
   "longitude": 4.7742

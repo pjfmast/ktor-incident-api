@@ -30,7 +30,7 @@ Content-Type: application/json
 Authorization: Bearer {{userHenkToken}}
 
 {
-  "category": "environment",
+  "category": "ENVIRONMENT",
   "description": "Electricity down in our street",
   "latitude": 51.5907258900,
   "longitude": 4.8148889134,

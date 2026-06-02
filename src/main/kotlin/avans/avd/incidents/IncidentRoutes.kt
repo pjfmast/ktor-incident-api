@@ -53,13 +53,11 @@ fun Route.incidentRoutes(
 
 
         post("/{incidentId}/images") {
-            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
+            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
             val foundIncident = incidentService.findById(incidentId)
                 ?: throw NotFoundException()
-
-            val userId = call.userId()
 
             var fileDescription = ""
             val uploadedFileNames = mutableListOf<String>() // List to track all uploaded filenames
@@ -93,7 +91,7 @@ fun Route.incidentRoutes(
 
                     else -> {}
                 }
-                part.dispose()
+                part.release()
             }
             if (uploadedFileNames.isEmpty()) {
                 call.respond(HttpStatusCode.BadRequest, "No files were uploaded")
@@ -150,7 +148,7 @@ fun Route.incidentRoutes(
 
 
         get("/{incidentId}") {
-            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
+            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
             val foundIncident = incidentService.findById(incidentId)
@@ -167,7 +165,7 @@ fun Route.incidentRoutes(
         }
 
         delete("/{incidentId}") {
-            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
+            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
             val foundIncident = incidentService.findById(incidentId)
@@ -187,8 +185,8 @@ fun Route.incidentRoutes(
         // an incident can be updated by an official or user who reported the incident,
         // but only if the incident is not resolved yet
         put("/{incidentId}") {
-            val incidentId: Long = call.parameters["incidentId"]?.toLong()
-                ?: throw NotFoundException()
+            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
+                ?: throw BadRequestException("Invalid ID")
 
             val updateRequest = call.receive<UpdateIncidentRequest>()
             val foundIncident = incidentService.findById(incidentId)
@@ -216,7 +214,7 @@ fun Route.incidentRoutes(
         // Endpoint to change incident priority (ADMIN/OFFICIAL only)
         patch("/{incidentId}/priority") {
             assertHasRole(Role.ADMIN, Role.OFFICIAL)
-            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
+            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
             val changePriorityRequest = call.receive<ChangePriorityRequest>()
@@ -235,7 +233,7 @@ fun Route.incidentRoutes(
         // Endpoint to change incident status (ADMIN/OFFICIAL only)
         patch("/{incidentId}/status") {
             assertHasRole(Role.ADMIN, Role.OFFICIAL)
-            val incidentId: Long = call.parameters["incidentId"]?.toLongOrNull()
+            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
                 ?: throw BadRequestException("Invalid ID")
 
             val changeStatusRequest = call.receive<ChangeStatusRequest>()

@@ -1,5 +1,6 @@
 package avans.avd
 
+import avans.avd.auth.JwtConfig
 import avans.avd.auth.JwtService
 import avans.avd.auth.authModule
 import avans.avd.incidents.FakeIncidentRepository
@@ -19,10 +20,12 @@ fun Application.installTestModules() {
     val userService = UserService(FakeUserRepository)
     val incidentService = IncidentService(FakeIncidentRepository)
     val jwtService = JwtService(
-        "my secret",
-        "http://localhost",
-        "ktor-incident-api",
-        "my realm",
+        JwtConfig(
+            secret = "my secret",
+            issuer = "http://localhost",
+            audience = "ktor-incident-api",
+            realm = "my realm"
+        ),
         userService
     )
 
