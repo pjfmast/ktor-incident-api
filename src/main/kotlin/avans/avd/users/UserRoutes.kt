@@ -14,6 +14,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.util.*
 
 fun Route.userRoutes(
     userService: UserService,
@@ -43,8 +44,7 @@ fun Route.userRoutes(
         // Only ADMIN or an Official can get a specific user
         get("/{id}") {
             assertIsQualified()
-            val id: Long = call.requirePathParameter("id").toLongOrNull()
-                ?: throw BadRequestException("Invalid ID")
+            val id: Long by call.pathParameters
 
             val foundUser = userService.findById(id)
                 ?: throw NotFoundException("User with id $id not found")
@@ -52,12 +52,9 @@ fun Route.userRoutes(
             call.respond(foundUser.toResponse())
         }
 
-
-
         put("/{id}/role") {
             assertHasRole(Role.ADMIN)
-            val id: Long = call.requirePathParameter("id").toLongOrNull()
-                ?: throw BadRequestException("Invalid ID")
+            val id: Long by call.pathParameters
 
             val roleRequest = call.receive<RoleUpdateRequest>()
             val user = userService.findById(id)
@@ -70,8 +67,7 @@ fun Route.userRoutes(
 
         delete("/{id}") {
             assertHasRole(Role.ADMIN)
-            val id: Long = call.requirePathParameter("id").toLongOrNull()
-                ?: throw BadRequestException("Invalid ID")
+            val id: Long by call.pathParameters
 
             val deleted = userService.delete(id)
             if (deleted) {
@@ -80,7 +76,6 @@ fun Route.userRoutes(
                 throw NotFoundException("User with id $id not found")
             }
         }
-
     }
 
     // requests available for authenticated users:
@@ -126,13 +121,10 @@ fun Route.userRoutes(
             } ?: call.respond(HttpStatusCode.Unauthorized, "Not authenticated")
         }
 
-
-
         // any qualified official can retrieve incidents reported by a user,
         // other users can only retrieve their own reported incidents.
-        get("{id}/incidents") {
-            val id: Long = call.requirePathParameter("id").toLongOrNull()
-                ?: return@get call.respond(HttpStatusCode.BadRequest)
+        get("/{id}/incidents") {
+            val id: Long by call.pathParameters
 
             val foundUser = userService.findById(id)
                 ?: return@get call.respond(HttpStatusCode.NotFound)

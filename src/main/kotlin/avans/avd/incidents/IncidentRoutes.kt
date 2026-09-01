@@ -12,6 +12,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.util.*
 import io.ktor.util.cio.*
 import io.ktor.utils.io.*
 import java.io.File
@@ -53,9 +54,11 @@ fun Route.incidentRoutes(
 
 
         post("/{incidentId}/images") {
-            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
-                ?: throw BadRequestException("Invalid ID")
+//            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
+//                ?: throw BadRequestException("Invalid ID")
 
+            val incidentId: Long by call.pathParameters
+            
             val foundIncident = incidentService.findById(incidentId)
                 ?: throw NotFoundException()
 
@@ -148,8 +151,7 @@ fun Route.incidentRoutes(
 
 
         get("/{incidentId}") {
-            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
-                ?: throw BadRequestException("Invalid ID")
+            val incidentId: Long by call.pathParameters
 
             val foundIncident = incidentService.findById(incidentId)
                 ?: throw NotFoundException()
@@ -165,8 +167,7 @@ fun Route.incidentRoutes(
         }
 
         delete("/{incidentId}") {
-            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
-                ?: throw BadRequestException("Invalid ID")
+            val incidentId: Long by call.pathParameters
 
             val foundIncident = incidentService.findById(incidentId)
                 ?: throw NotFoundException()
@@ -185,8 +186,7 @@ fun Route.incidentRoutes(
         // an incident can be updated by an official or user who reported the incident,
         // but only if the incident is not resolved yet
         put("/{incidentId}") {
-            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
-                ?: throw BadRequestException("Invalid ID")
+            val incidentId: Long by call.pathParameters
 
             val updateRequest = call.receive<UpdateIncidentRequest>()
             val foundIncident = incidentService.findById(incidentId)
@@ -214,8 +214,7 @@ fun Route.incidentRoutes(
         // Endpoint to change incident priority (ADMIN/OFFICIAL only)
         patch("/{incidentId}/priority") {
             assertHasRole(Role.ADMIN, Role.OFFICIAL)
-            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
-                ?: throw BadRequestException("Invalid ID")
+            val incidentId: Long by call.pathParameters
 
             val changePriorityRequest = call.receive<ChangePriorityRequest>()
             val foundIncident = incidentService.findById(incidentId)
@@ -233,8 +232,7 @@ fun Route.incidentRoutes(
         // Endpoint to change incident status (ADMIN/OFFICIAL only)
         patch("/{incidentId}/status") {
             assertHasRole(Role.ADMIN, Role.OFFICIAL)
-            val incidentId: Long = call.requirePathParameter("incidentId").toLongOrNull()
-                ?: throw BadRequestException("Invalid ID")
+            val incidentId: Long by call.pathParameters
 
             val changeStatusRequest = call.receive<ChangeStatusRequest>()
             val foundIncident = incidentService.findById(incidentId)

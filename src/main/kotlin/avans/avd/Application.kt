@@ -6,10 +6,10 @@ import avans.avd.auth.authModule
 import avans.avd.incidents.FakeIncidentRepository
 import avans.avd.incidents.IncidentService
 import avans.avd.incidents.incidentsModule
+import avans.avd.plugins.configureStatusPages
 import avans.avd.users.FakeUserRepository
 import avans.avd.users.UserService
 import avans.avd.users.usersModule
-import configureStatusPages
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.config.*
@@ -25,6 +25,7 @@ data class AppConfig(
 )
 
 fun main(args: Array<String>) {
+
     io.ktor.server.netty.EngineMain.main(args)
 }
 
