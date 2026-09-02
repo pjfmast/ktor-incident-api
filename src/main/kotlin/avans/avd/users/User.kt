@@ -7,6 +7,8 @@ data class User(
     val email: String,
     val role: Role = Role.USER,
     val avatar: String? = null,
+    // Deliberately a primitive Long and not a value class UserId: ids cross the JSON, JWT-claim and
+    // route-parameter boundaries, each of which would need its own serializer and conversion.
     val id: Long = NEW_USER_ID
 ) {
     companion object {

@@ -10,6 +10,12 @@ interface CrudRepository<T, ID> {
     suspend fun delete(id: ID): Boolean
 }
 
+/**
+ * Base class for in-memory fakes, intended for demos and tests only.
+ *
+ * Not thread-safe: [items] is a plain list and [currentId] is incremented without synchronization,
+ * so concurrent requests can corrupt the state. Instantiate one fake per application or test.
+ */
 abstract class BaseInMemoryRepository<T> : CrudRepository<T, Long> {
     protected abstract val items: MutableList<T>
     protected abstract var currentId: Long

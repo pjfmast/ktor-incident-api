@@ -11,23 +11,30 @@ import avans.avd.users.UserService
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
+import kotlinx.coroutines.runBlocking
+
+/**
+ * Single JWT configuration shared by the test application and the test client helpers.
+ */
+val testJwtConfig = JwtConfig(
+    secret = "my secret",
+    issuer = "http://localhost",
+    audience = "ktor-incident-api",
+    realm = "my realm"
+)
 
 /**
  * Common Ktor test application setup so tests don't repeat DI and plugin wiring.
  */
 fun Application.installTestModules() {
-    // Manual wiring in tests
-    val userService = UserService(FakeUserRepository)
-    val incidentService = IncidentService(FakeIncidentRepository)
-    val jwtService = JwtService(
-        JwtConfig(
-            secret = "my secret",
-            issuer = "http://localhost",
-            audience = "ktor-incident-api",
-            realm = "my realm"
-        ),
-        userService
-    )
+    // Manual wiring in tests: every test gets its own freshly seeded fakes,
+    // so state never leaks from one test into another.
+    val userRepository = runBlocking { FakeUserRepository.withDemoData() }
+    val incidentRepository = runBlocking { FakeIncidentRepository.withDemoData(userRepository) }
+
+    val userService = UserService(userRepository)
+    val incidentService = IncidentService(incidentRepository)
+    val jwtService = JwtService(testJwtConfig, userService)
 
     install(ContentNegotiation) { json() }
 
