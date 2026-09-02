@@ -3,15 +3,10 @@ package avans.avd
 import avans.avd.auth.JwtConfig
 import avans.avd.auth.JwtService
 import avans.avd.auth.authModule
-import avans.avd.incidents.FakeIncidentRepository
-import avans.avd.incidents.IncidentService
-import avans.avd.incidents.incidentsModule
-import avans.avd.incidents.seedDemoData
+import avans.avd.core.DatabaseFactory
+import avans.avd.incidents.*
 import avans.avd.plugins.configureStatusPages
-import avans.avd.users.FakeUserRepository
-import avans.avd.users.UserService
-import avans.avd.users.seedDemoData
-import avans.avd.users.usersModule
+import avans.avd.users.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.config.*
@@ -37,10 +32,16 @@ fun Application.module() {
     // Configure error handling (e.g., custom error pages)
     configureStatusPages()
 
-    // Fakes are plain classes, so this application owns its own instances.
+    // Connect to the database and create the schema. Pass DatabaseFactory.H2_FILE_URL as the second
+    // argument to keep the data between restarts instead of using the in-memory database.
+    DatabaseFactory.init(listOf(UsersTable, IncidentsTable, IncidentImagesTable))
+
+    // The repositories are plain classes, so this application owns its own instances.
     // Seeding is suspending, hence runBlocking during (one-time) startup wiring.
-    val userRepository = FakeUserRepository()
-    val incidentRepository = FakeIncidentRepository()
+    // Both seedDemoData functions are idempotent: an already filled database is left untouched,
+    // so with a file-based database the demo data is only inserted the very first time.
+    val userRepository = ExposedUserRepository()
+    val incidentRepository = ExposedIncidentRepository()
     runBlocking {
         userRepository.seedDemoData()
         incidentRepository.seedDemoData(userRepository)
@@ -63,6 +64,3 @@ fun Application.module() {
     routing {
         staticFiles("/uploads", File("uploads"))}
 }
-
-
-

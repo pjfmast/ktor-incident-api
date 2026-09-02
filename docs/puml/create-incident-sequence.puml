@@ -1,0 +1,98 @@
+@startuml create-incident-sequence
+' Sequence diagram for creating an Incident:
+' POST /api/incidents  (authentication is optional: anonymous reports are allowed)
+
+title Create Incident - POST /api/incidents
+
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor Client as client
+participant "Ktor Server\n(Netty EngineMain)" as server
+participant "ContentNegotiation\n(kotlinx.serialization json)" as json
+participant "Authentication\n(jwt, optional = true)" as auth
+participant "JwtService" as jwt
+participant "incidentRoutes\npost { }" as routes
+participant "IncidentService" as service
+participant "FakeIncidentRepository\n(BaseInMemoryRepository)" as repo
+participant "StatusPages\n(configureStatusPages)" as statusPages
+
+client -> server : POST /api/incidents\nAuthorization: Bearer <token> (optional)\nbody: CreateIncidentRequest (JSON)
+activate server
+
+server -> auth : authenticate(optional = true)
+activate auth
+alt token present and valid
+    auth -> jwt : validate token / load user
+    activate jwt
+    jwt --> auth : UserPrincipal(user)
+    deactivate jwt
+    note right of auth : principal is stored on the call
+else no token (anonymous) or invalid token
+    auth --> auth : no principal, request continues
+end
+auth --> server : continue routing
+deactivate auth
+
+server -> routes : handle request
+activate routes
+
+routes -> json : call.receive<CreateIncidentRequest>()
+activate json
+json --> routes : CreateIncidentRequest
+deactivate json
+
+routes -> routes : call.userId()\n(principal<UserPrincipal>()?.user?.id)
+note right of routes
+  userId == null  -> anonymous incident
+  userId != null  -> incident is linked to the reporter
+end note
+
+routes -> routes : createIncidentRequest.toModel(\n  Incident.NEW_INCIDENT_ID, userId)
+note right of routes
+  new Incident with:
+  id = NEW_INCIDENT_ID (0)
+  status = REPORTED
+  createdAt / updatedAt = now
+end note
+
+routes -> service : save(incident)
+activate service
+service -> repo : save(incident)
+activate repo
+repo -> repo : id == 0 -> create(entity)\ncurrentId++, copyWithNewId(entity, currentId)
+repo --> service : Incident (with generated id)
+deactivate repo
+service --> routes : Incident
+deactivate service
+
+routes -> routes : createdIncident.toResponse()
+routes -> server : response.header("id", createdIncident.id)\nrespond(201 Created, IncidentResponse)
+deactivate routes
+
+server -> json : serialize IncidentResponse
+activate json
+json --> server : JSON body
+deactivate json
+
+server --> client : 201 Created\nid: <incidentId>\nIncidentResponse (JSON)
+deactivate server
+
+group Error handling (StatusPages)
+    client -> server : POST /api/incidents\ninvalid or incomplete JSON body
+    activate server
+    server -> routes : handle request
+    activate routes
+    routes -> json : call.receive<CreateIncidentRequest>()
+    activate json
+    json --> routes : throws BadRequestException
+    deactivate json
+    deactivate routes
+    server -> statusPages : exception
+    activate statusPages
+    statusPages --> client : 400 Bad Request\n{ "error": "Invalid request." }
+    deactivate statusPages
+    deactivate server
+end
+
+@enduml
