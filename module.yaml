@@ -1,0 +1,32 @@
+product: jvm/app
+
+dependencies:
+  - io.ktor:ktor-server-core
+  - io.ktor:ktor-server-netty
+  - io.ktor:ktor-server-auth
+  - io.ktor:ktor-server-auth-jwt
+  - io.ktor:ktor-server-status-pages
+  - io.ktor:ktor-server-content-negotiation
+  - io.ktor:ktor-serialization-kotlinx-json
+  - $libs.logback.classic
+  - $libs.kotlinx.datetime
+  - $libs.exposed.core
+  - $libs.exposed.dao
+  - $libs.exposed.jdbc
+  - $libs.exposed.kotlin.datetime
+  - $libs.h2
+
+test-dependencies:
+  - io.ktor:ktor-server-test-host
+  - $libs.kotlin.test.junit
+
+settings:
+  jvm:
+    mainClass: avans.avd.ApplicationKt
+  kotlin:
+    serialization: json
+    optIns:
+      - io.ktor.utils.io.ExperimentalKtorApi
+  ktor:
+    enabled: true
+    version: 3.6.0
