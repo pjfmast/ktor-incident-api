@@ -1,0 +1,83 @@
+@startuml use-case-diagram
+title Use Case Diagram - Ktor Incident API
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam actorStyle awesome
+
+actor "Anonymous" as Anon
+actor "User" as User
+actor "Official" as Official
+actor "Admin" as Admin
+
+' Role inheritance / hierarchy
+Anon <|-- User
+User <|-- Official
+Official <|-- Admin
+
+rectangle "Ktor Incident API" {
+
+    package "Authenticatie & Account" {
+        usecase "Inloggen" as UC_Login
+        usecase "Registreren (als User)" as UC_Register
+        usecase "Eigen profiel inzien / wijzigen" as UC_Profile
+    }
+
+    package "Incident Meldingen (User)" {
+        usecase "Incident melden" as UC_CreateIncident
+        usecase "Foto uploaden bij incident" as UC_UploadImage
+        usecase "Eigen incidenten inzien" as UC_ViewMyIncidents
+        usecase "Eigen incident bewerken\n(mits niet RESOLVED)" as UC_EditOwnIncident
+        usecase "Eigen incident verwijderen" as UC_DeleteOwnIncident
+    }
+
+    package "Incident Beheer (Official)" {
+        usecase "Alle incidenten inzien (lijst / paginering)" as UC_ViewAllIncidents
+        usecase "Willekeurig incident inzien / verwijderen" as UC_ManageAnyIncident
+        usecase "Incident status wijzigen" as UC_ChangeStatus
+        usecase "Incident prioriteit aanpassen" as UC_ChangePriority
+    }
+
+    package "Systeembeheer (Admin)" {
+        usecase "Alle gebruikers inzien" as UC_ViewAllUsers
+        usecase "Specifieke gebruiker op ID inzien" as UC_ViewSpecificUser
+        usecase "Gebruikersrol wijzigen" as UC_ChangeUserRole
+        usecase "Gebruiker verwijderen" as UC_DeleteUser
+    }
+}
+
+' Legenda met Engelse en Nederlandse benamingen
+legend right
+|= Role (English) |= Rol (Nederlands) |= Toelichting / Rechten |
+| Anonymous | Anonieme bezoeker / Gast | Publieke toegang; incident melden & registreren |
+| User | Geregistreerde burger / gebruiker | Eigen profiel & eigen incidenten beheren |
+| Official | Ambtenaar / behandelaar | Alle incidenten inzien, status & prioriteit wijzigen |
+| Admin | Systeembeheerder | Volledig beheer van gebruikers en incidenten |
+endlegend
+
+' Anonymous associations
+Anon --> UC_Login
+Anon --> UC_Register
+Anon --> UC_CreateIncident
+Anon --> UC_UploadImage
+
+' User associations
+User --> UC_Profile
+User --> UC_ViewMyIncidents
+User --> UC_EditOwnIncident
+User --> UC_DeleteOwnIncident
+
+' Official associations
+Official --> UC_ViewAllIncidents
+Official --> UC_ManageAnyIncident
+Official --> UC_ChangeStatus
+Official --> UC_ChangePriority
+
+' Admin associations
+Admin --> UC_ViewAllUsers
+Admin --> UC_ViewSpecificUser
+Admin --> UC_ChangeUserRole
+Admin --> UC_DeleteUser
+
+@enduml
