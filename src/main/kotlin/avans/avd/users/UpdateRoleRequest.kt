@@ -3,6 +3,6 @@ package avans.avd.users
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RoleUpdateRequest(
+data class UpdateRoleRequest(
     val role: Role
 )

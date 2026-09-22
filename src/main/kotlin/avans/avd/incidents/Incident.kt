@@ -16,7 +16,7 @@ enum class Category{
 }
 
 data class Incident(
-    // the username of the user who reported this Incident
+    // the user-id of the user who reported this Incident
     val reportedBy: Long?,
 
     val category: Category,
@@ -54,7 +54,7 @@ data class Incident(
         }
 
 
-    fun isReportedByCurrentUser(userID: Long?): Boolean = userID != null && !isAnonymous && reportedBy == userID
+    fun isReportedByCurrentUser(userID: Long?): Boolean = (userID != null) && !isAnonymous && (reportedBy == userID)
 
     fun isCoordinateInArea(latMin: Double, latMax: Double, lngMin: Double, lngMax: Double): Boolean {
         return latitude in latMin..latMax && longitude in lngMin..lngMax
@@ -67,6 +67,6 @@ data class Incident(
 
 
     companion object {
-        val NEW_INCIDENT_ID = 0L
+        const val NEW_INCIDENT_ID = 0L
     }
 }

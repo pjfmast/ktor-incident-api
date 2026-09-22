@@ -8,9 +8,12 @@ import avans.avd.incidents.IncidentService
 import avans.avd.incidents.incidentsModule
 import avans.avd.users.FakeUserRepository
 import avans.avd.users.UserService
+import avans.avd.users.usersModule
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -40,5 +43,12 @@ fun Application.installTestModules() {
 
     // Install routes and security commonly needed by tests
     authModule(jwtService)
-    incidentsModule(incidentService)
+    incidentsModule(incidentService, userService, jwtService.roleAuth)
+    usersModule(userService, incidentService, jwtService.roleAuth)
+
+    routing {
+        get("/") {
+            call.respondText("Incident API is running")
+        }
+    }
 }

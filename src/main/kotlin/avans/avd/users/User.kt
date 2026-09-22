@@ -1,5 +1,6 @@
 package avans.avd.users
 
+import io.ktor.server.auth.*
 
 data class User(
     val username: String,
@@ -16,8 +17,13 @@ data class User(
     }
 }
 
-enum class Role {
+// Roles are hierarchical: ADMIN implies OFFICIAL, OFFICIAL implies USER (see JwtService.roleAuth)
+enum class Role : AuthenticationRole {
     USER,
     OFFICIAL,
-    ADMIN
+    ADMIN;
+
+    /** All roles this role implies, including itself. */
+    val implied: Set<Role>
+        get() = entries.filter { it.ordinal <= ordinal }.toSet()
 }

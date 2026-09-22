@@ -10,12 +10,11 @@ import avans.avd.users.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.config.*
-import io.ktor.server.http.content.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import java.io.File
 
 @Serializable
 data class AppConfig(
@@ -58,9 +57,12 @@ fun Application.module() {
 
     // Install route modules with explicit dependencies (no DI container)
     authModule(jwtService)
-    incidentsModule(incidentService)
-    usersModule(userService, incidentService)
+    incidentsModule(incidentService, userService, jwtService.roleAuth)
+    usersModule(userService, incidentService, jwtService.roleAuth)
 
     routing {
-        staticFiles("/uploads", File("uploads"))}
+        get("/") {
+            call.respondText("Incident API is running")
+        }
+    }
 }

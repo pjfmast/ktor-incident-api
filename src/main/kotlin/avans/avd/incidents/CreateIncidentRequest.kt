@@ -3,7 +3,7 @@ package avans.avd.incidents
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CreateIncidentRequest (
+data class CreateIncidentRequest(
     val category: Category,
     val description: String,
 

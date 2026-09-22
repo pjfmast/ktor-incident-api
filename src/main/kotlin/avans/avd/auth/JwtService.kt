@@ -1,13 +1,21 @@
 package avans.avd.auth
 
+import avans.avd.users.Role
 import avans.avd.users.User
 import avans.avd.users.UserService
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import io.ktor.http.*
+import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 import java.util.*
+
+/** JWT authentication scheme extended with role-based authorization on [Role]. */
+typealias RoleAuthScheme =
+    AuthenticationSchemeWithRoles<UserPrincipal, Role, Unit, SimpleAuthenticationScheme<UserPrincipal>>
 
 @Serializable
 data class JwtConfig(
@@ -29,6 +37,28 @@ class JwtService(
             .withAudience(jwtConfig.audience)
             .withIssuer(jwtConfig.issuer)
             .build()
+
+    val authScheme: SimpleAuthenticationScheme<UserPrincipal> = jwt("jwt-auth") {
+        realm = jwtRealm
+        verifier(jwtVerifier)
+
+        validate { credential ->
+            customValidator(credential)
+        }
+    }
+
+    // Role-based authorization on top of the JWT scheme. Ktor requires ALL roles passed to
+    // authenticateWith(roles = ...) to be present, so a principal resolves to every role its own role implies.
+    val roleAuth: RoleAuthScheme = authScheme.withRoles(
+        onForbidden = {
+            call.respond(
+                HttpStatusCode.Forbidden,
+                mapOf("error" to "You do not have permission to access this resource.")
+            )
+        }
+    ) { principal ->
+        principal.user.role.implied
+    }
 
     suspend fun authenticate(loginRequest: LoginRequest): String? {
         val foundUser = userService.findByUsername(loginRequest.username)

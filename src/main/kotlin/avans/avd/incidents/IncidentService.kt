@@ -27,9 +27,9 @@ class IncidentService(
         val foundIncident = incidentRepository.findById(incidentId)
         return if (foundIncident != null) {
             incidentRepository.delete(incidentId)
-            // also remove all images for this incident
-            foundIncident.images.forEach { imagefile ->
-                val imageToDelete = Path(getImageUploadPath(imagefile))
+            // also remove all images of this incident
+            foundIncident.images.forEach { imageFile ->
+                val imageToDelete = Path(getImageUploadPath(imageFile))
                 deleteIfExists(imageToDelete)
             }
             true

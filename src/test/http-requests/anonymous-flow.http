@@ -1,3 +1,6 @@
+### Check if the API is running (Root endpoint)
+GET http://localhost:8080/
+
 ### An anonymous user may only report a new incident, but cannot update
 POST http://localhost:8080/api/incidents
 Content-Type: application/json

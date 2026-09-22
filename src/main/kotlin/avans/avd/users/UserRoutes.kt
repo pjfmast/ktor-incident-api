@@ -1,11 +1,9 @@
 package avans.avd.users
 
-import avans.avd.auth.UserPrincipal
+import avans.avd.auth.RoleAuthScheme
 import avans.avd.incidents.Incident
 import avans.avd.incidents.IncidentService
 import avans.avd.incidents.toResponse
-import avans.avd.utils.assertHasRole
-import avans.avd.utils.assertIsQualified
 import avans.avd.utils.isQualifiedOfficial
 import avans.avd.utils.userId
 import io.ktor.http.*
@@ -18,7 +16,8 @@ import io.ktor.server.util.*
 
 fun Route.userRoutes(
     userService: UserService,
-    incidentService: IncidentService
+    incidentService: IncidentService,
+    roleAuth: RoleAuthScheme
 ) {
     // anyone can register as a user:
     route("/register") {
@@ -32,18 +31,16 @@ fun Route.userRoutes(
         }
     }
 
-    // user requests for ADMIN only
-    authenticate {
-        // Only ADMIN can get all Users
+    // User requests for ADMIN only (Ktor responds with 403 Forbidden for other roles)
+    authenticateWith(roleAuth, roles = setOf(Role.ADMIN)) {
+        // Get all Users
         get {
-            assertHasRole(Role.ADMIN)
             val users = userService.findAll()
             call.respond(users.map(User::toResponse))
         }
 
-        // Only ADMIN or an Official can get a specific user
+        // Get a specific user by ID (ADMIN only)
         get("/{id}") {
-            assertIsQualified()
             val id: Long by call.pathParameters
 
             val foundUser = userService.findById(id)
@@ -53,10 +50,9 @@ fun Route.userRoutes(
         }
 
         put("/{id}/role") {
-            assertHasRole(Role.ADMIN)
             val id: Long by call.pathParameters
 
-            val roleRequest = call.receive<RoleUpdateRequest>()
+            val roleRequest = call.receive<UpdateRoleRequest>()
             val user = userService.findById(id)
                 ?: throw NotFoundException("User with id $id not found")
 
@@ -66,12 +62,11 @@ fun Route.userRoutes(
         }
 
         delete("/{id}") {
-            assertHasRole(Role.ADMIN)
             val id: Long by call.pathParameters
 
             val deleted = userService.delete(id)
             if (deleted) {
-                call.respond(HttpStatusCode.NoContent, "User with id $id is deleted.")
+                call.respond(HttpStatusCode.NoContent)
             } else {
                 throw NotFoundException("User with id $id not found")
             }
@@ -79,46 +74,40 @@ fun Route.userRoutes(
     }
 
     // requests available for authenticated users:
-    authenticate {
+    authenticateWith(roleAuth) {
         // any authenticated user can retrieve the current user information
         get("/me") {
             // Get the current authenticated user from the principal
-            val userPrincipal = call.principal<UserPrincipal>()
+            val userPrincipal = call.principal
 
-            userPrincipal?.let {
-                // Return the user information (excluding sensitive data like password)
-                call.respond(it.user.toResponse())
-            } ?: call.respond(HttpStatusCode.Unauthorized, "Not authenticated")
+            // Return the user information (excluding sensitive data like password)
+            call.respond(userPrincipal.user.toResponse())
         }
 
         // Allow users to update their own details
         put("/me") {
             // Get the current authenticated user
-            val userPrincipal = call.principal<UserPrincipal>()
-            
-            userPrincipal?.let {
-                // Get the update request
-                val updateRequest = call.receive<UpdateUserRequest>()
+            val userPrincipal = call.principal
 
-                // Get the current user
-                val currentUser = userService.findById(userPrincipal.user.id)
-                    ?: throw NotFoundException("User not found")
+            // Get the update request
+            val updateRequest = call.receive<UpdateUserRequest>()
+            val currentUser = userService.findById(userPrincipal.user.id)
+                ?: throw NotFoundException("User not found")
 
-                val updatedUser = currentUser.copy(
-                    username = updateRequest.username ?: currentUser.username,
-                    // Only update password if provided and not empty
-                    password = updateRequest.password?.takeIf { it.isNotBlank() } ?: currentUser.password,
-                    email = updateRequest.email ?: currentUser.email,
-                    // Don't allow users to change their own role
-                    avatar = updateRequest.avatar ?: currentUser.avatar
-                )
+            val updatedUser = currentUser.copy(
+                username = updateRequest.username ?: currentUser.username,
+                // Only update password if provided and not empty
+                password = updateRequest.password?.takeIf { it.isNotBlank() } ?: currentUser.password,
+                email = updateRequest.email ?: currentUser.email,
+                // Don't allow users to change their own role
+                avatar = updateRequest.avatar ?: currentUser.avatar
+            )
 
-                // Save the updated user
-                val savedUser = userService.save(updatedUser)
+            // Save the updated user
+            val savedUser = userService.save(updatedUser)
 
-                // Return the updated user
-                call.respond(savedUser.toResponse())
-            } ?: call.respond(HttpStatusCode.Unauthorized, "Not authenticated")
+            // Return the updated user
+            call.respond(savedUser.toResponse())
         }
 
         // any qualified official can retrieve incidents reported by a user,

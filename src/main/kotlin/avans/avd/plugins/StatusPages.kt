@@ -1,6 +1,5 @@
 package avans.avd.plugins
 
-import avans.avd.exceptions.MissingRoleException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -14,7 +13,7 @@ fun Application.configureStatusPages() {
             val response = when (cause) {
                 is BadRequestException  -> HttpStatusCode.BadRequest to (cause.message ?: "Invalid request.")
                 is NotFoundException    -> HttpStatusCode.NotFound to  (cause.message ?: "Resource not found.")
-                is MissingRoleException -> HttpStatusCode.Forbidden to (cause.message ?: "You do not have permission to access this resource.")
+                is IllegalArgumentException -> HttpStatusCode.BadRequest to (cause.message ?: "Invalid request.")
                 else                    -> HttpStatusCode.InternalServerError to "An unexpected error occurred."
             }
             call.respond(response.first, mapOf("error" to response.second))
@@ -23,6 +22,10 @@ fun Application.configureStatusPages() {
         // Status code handlers
         status(HttpStatusCode.Unauthorized) { call, status ->
             call.respond(status, mapOf("error" to "Authentication is required to access this resource"))
+        }
+        // Fallback for body-less 403 responses (e.g. Ktor's default ForbiddenHandler)
+        status(HttpStatusCode.Forbidden) { call, status ->
+            call.respond(status, mapOf("error" to "You do not have permission to access this resource."))
         }
     }
 }

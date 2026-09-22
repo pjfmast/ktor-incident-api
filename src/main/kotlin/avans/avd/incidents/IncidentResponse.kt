@@ -5,8 +5,17 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class ReporterResponse(
+    val id: Long,
+    val username: String,
+    val email: String,
+    val avatar: String? = null
+)
+
+@Serializable
 data class IncidentResponse(
-    val reportedBy: Long?, // user id of the user who reported this Incident
+    val reportedBy: Long?, // User ID of the user who reported this Incident
+    val reporter: ReporterResponse? = null, // Nested reporter details for authorized officials/reporters
 
     val category: Category,
     val description: String,
