@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.4.20"
 logback = "1.5.25"
-datetime = "0.8.0"
+datetime = "0.8.0-0.6.x-compat"
 exposed = "1.5.0"
 h2 = "2.4.240"
 ktor = "3.6.0"
