@@ -1,0 +1,2 @@
+# Ensure Unix wrapper script always keeps LF line endings
+kotlin text eol=lf
