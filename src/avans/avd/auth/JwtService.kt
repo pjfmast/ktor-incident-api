@@ -74,7 +74,7 @@ class JwtService(
         .withIssuer(jwtConfig.issuer)
         .withClaim("id", foundUser.id)
         .withClaim("role", foundUser.role.toString())
-        .withExpiresAt(Date(System.currentTimeMillis() + 3_600_000))
+        .withExpiresAt(Date(System.currentTimeMillis() + 10_000))
         .sign(Algorithm.HMAC256(jwtConfig.secret))
 
     // ... existing code ...

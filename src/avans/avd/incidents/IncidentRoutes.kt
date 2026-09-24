@@ -165,18 +165,20 @@ fun Route.incidentRoutes(
         }
 
         get("/paginated") {
-            // Extract page and pageSize from query parameters with defaults
-            val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
-            val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 10
+            val page: Int? by call.queryParameters
+            val pageSize: Int? by call.queryParameters
+
+            val currentPage = page ?: 1
+            val currentPageSize = pageSize ?: 10
 
             // Validate parameters
-            if (page <= 0 || pageSize <= 0) {
+            if (currentPage <= 0 || currentPageSize <= 0) {
                 call.respond(HttpStatusCode.BadRequest, "Page and pageSize must be positive")
                 return@get
             }
 
             // Get paginated incidents
-            val (incidents, totalCount) = incidentService.findAllPaginated(page, pageSize)
+            val (incidents, totalCount) = incidentService.findAllPaginated(currentPage, currentPageSize)
 
             // Map to response objects and wrap in PaginatedItemResponse
             val paginatedResponse = PaginatedItemResponse(

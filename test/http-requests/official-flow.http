@@ -25,7 +25,7 @@ GET http://localhost:8080/api/users/2/incidents
 Authorization: Bearer {{officialToken}}
 
 ### Get incident with ID=1 and see the priority=HIGH and status=ASSIGNED
-GET http://localhost:8080/api/incidents/1
+GET http://localhost:8080/api/incidents/16
 Authorization: Bearer {{officialToken}}
 
 > {%
@@ -33,7 +33,7 @@ Authorization: Bearer {{officialToken}}
 %}
 
 ### Change incident status to ASSIGNED
-PATCH http://localhost:8080/api/incidents/2/status
+PATCH http://localhost:8080/api/incidents/16/status
 Content-Type: application/json
 Authorization: Bearer {{officialToken}}
 
@@ -43,7 +43,7 @@ Authorization: Bearer {{officialToken}}
 
 ### Update pririty of incident with ID=1 to CRITICAL
 ### PATCH the priority of this incident to CRITICAL
-PATCH http://localhost:8080/api/incidents/{{incidentIdToTestPutAndPatch}}/priority
+PATCH http://localhost:8080/api/incidents/16/priority
 Content-Type: application/json
 Authorization: Bearer {{officialToken}}
 
@@ -53,7 +53,7 @@ Authorization: Bearer {{officialToken}}
 
 
 ### Change the status of this incident to RESOLVED
-PATCH http://localhost:8080/api/incidents/{{incidentIdToTestPutAndPatch}}/status
+PATCH http://localhost:8080/api/incidents/16/status
 Content-Type: application/json
 Authorization: Bearer {{officialToken}}
 
@@ -69,4 +69,3 @@ Authorization: Bearer {{officialToken}}
 ### Get paginated incidents list
 GET http://localhost:8080/api/incidents/paginated?page=2&pageSize=3
 Authorization: Bearer {{officialToken}}
-

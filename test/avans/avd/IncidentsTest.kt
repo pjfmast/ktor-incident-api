@@ -64,6 +64,63 @@ class IncidentsTest {
     }
 
     @Test
+    fun `list of incidents paginated - happy path default parameters`() = testApplication {
+        application {
+            installTestModules()
+        }
+
+        client.get("/api/incidents/paginated") {
+            authenticate(Role.OFFICIAL)
+        }.apply {
+            assertEquals(HttpStatusCode.OK, status)
+            val responseBody = bodyAsText()
+            assertTrue(responseBody.contains("\"data\":"))
+            assertTrue(responseBody.contains("\"totalCount\":"))
+        }
+    }
+
+    @Test
+    fun `list of incidents paginated - valid custom query parameters`() = testApplication {
+        application {
+            installTestModules()
+        }
+
+        client.get("/api/incidents/paginated?page=1&pageSize=2") {
+            authenticate(Role.OFFICIAL)
+        }.apply {
+            assertEquals(HttpStatusCode.OK, status)
+            val responseBody = bodyAsText()
+            assertTrue(responseBody.contains("\"data\":"))
+        }
+    }
+
+    @Test
+    fun `list of incidents paginated - invalid non-numeric parameter returns 400 Bad Request`() = testApplication {
+        application {
+            installTestModules()
+        }
+
+        client.get("/api/incidents/paginated?page=invalid") {
+            authenticate(Role.OFFICIAL)
+        }.apply {
+            assertEquals(HttpStatusCode.BadRequest, status)
+        }
+    }
+
+    @Test
+    fun `list of incidents paginated - non-positive parameter returns 400 Bad Request`() = testApplication {
+        application {
+            installTestModules()
+        }
+
+        client.get("/api/incidents/paginated?page=-1") {
+            authenticate(Role.OFFICIAL)
+        }.apply {
+            assertEquals(HttpStatusCode.BadRequest, status)
+        }
+    }
+
+    @Test
     fun `my incidents - happy path`() = testApplication {
         application {
             installTestModules()

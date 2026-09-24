@@ -6,6 +6,9 @@ This project is a demo for a modern Ktor backend application.
 For the complete architecture, case description, security design, and developer instructions:
 👉 **[Ontwikkeldocument](docs/ontwikkeldocument.md)** *(in Dutch)*
 
+For an educational introduction to Ktor theory based on this project:
+👉 **[Ktor Theorie- en Introductiegids](docs/theorie-ktor-introductie.md)** *(in Dutch)*
+
 ---
 
 ### Highlights & Modern Tech Stack

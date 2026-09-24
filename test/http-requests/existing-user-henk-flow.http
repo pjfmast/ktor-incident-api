@@ -1,4 +1,4 @@
-### Login as existing user 'Henk' and save token
+### STAP 1: Login als Henk en bewaar het kortlevende token (zet om te tseten geldigheid voor 10 seconden)
 POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
@@ -9,11 +9,40 @@ Content-Type: application/json
 
 > {%
     client.global.set("userHenkToken", response.body.token);
+    client.log("Token ontvangen: " + response.body.token);
 %}
 
-### GET information on this new logged-in user
+### STAP 2: Direct verzoek uitvoeren (BINNEN 10 seconden) -> Verwacht: 200 OK
 GET http://localhost:8080/api/users/me
 Authorization: Bearer {{userHenkToken}}
+
+> {%
+    client.test("Token is nog geldig: status 200", function() {
+        client.assert(response.status === 200, "Verwachtte 200 OK maar kreeg " + response.status);
+    });
+%}
+
+### PAUZE: Wacht nu handmatig 10 tot 15 seconden totdat het token verlopen is...
+
+### STAP 3: Hetzelfde verzoek opnieuw uitvoeren (NA 5 seconden) -> Verwacht: 401 Unauthorized
+GET http://localhost:8080/api/users/me
+Authorization: Bearer {{userHenkToken}}
+
+> {%
+    client.test("Token is verlopen: status 401 Unauthorized", function() {
+        client.assert(response.status === 401, "Verwachtte 401 Unauthorized maar kreeg " + response.status);
+    });
+%}
+
+### STAP 4: Aantonen dat ook andere endpoints nu direct geblokkeerd worden
+GET http://localhost:8080/api/incidents/my-incidents
+Authorization: Bearer {{userHenkToken}}
+
+> {%
+    client.test("Ook incidenten ophalen mislukt: status 401", function() {
+        client.assert(response.status === 401, "Verwachtte 401 Unauthorized");
+    });
+%}
 
 ### Try change role fails: a normal USER cannot promote themself to OFFICIAL, but an ADMIN can
 PUT http://localhost:8080/api/users/2/role

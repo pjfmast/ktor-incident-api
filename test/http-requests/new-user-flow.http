@@ -69,7 +69,7 @@ Authorization: Bearer {{newUserToken}}
 
 {
   "category": "TRAFFIC",
-  "description": "Broken traffic light",
+  "description": "Lift kapot",
   "latitude": 51.5897,
   "longitude": 4.7742,
   "priority": "HIGH"
@@ -84,7 +84,7 @@ GET http://localhost:8080/api/incidents/my-incidents
 Authorization: Bearer {{newUserToken}}
 
 ### Update existing incident 5
-PUT http://localhost:8080/api/incidents/{{newIncidentByUser}}
+PUT http://localhost:8080/api/incidents/16
 Content-Type: application/json
 Authorization: Bearer {{newUserToken}}
 
