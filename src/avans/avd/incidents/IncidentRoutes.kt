@@ -52,7 +52,7 @@ fun Route.incidentRoutes(
     authenticateWithOptional(roleAuth) {
         post {
             val createIncidentRequest = call.receive<CreateIncidentRequest>()
-            val userId = call.userId()
+            val userId: Long? = call.userId()
 
             val createdIncident = incidentService.save(
                 createIncidentRequest.toModel(Incident.NEW_INCIDENT_ID, userId)

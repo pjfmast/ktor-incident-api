@@ -89,5 +89,5 @@ GET http://localhost:8080/api/incidents/1
 Authorization: Bearer {{adminToken}}
 
 ### DELETE an incident
-DELETE http://localhost:8080/api/incidents/1
+DELETE http://localhost:8080/api/incidents/14
 Authorization: Bearer {{adminToken}}
