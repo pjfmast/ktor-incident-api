@@ -14,8 +14,7 @@ import kotlinx.serialization.Serializable
 import java.util.*
 
 /** JWT authentication scheme extended with role-based authorization on [Role]. */
-typealias RoleAuthScheme =
-    AuthenticationSchemeWithRoles<UserPrincipal, Role, Unit, SimpleAuthenticationScheme<UserPrincipal>>
+typealias RoleAuthScheme = AuthenticationSchemeWithRoles<UserPrincipal, Role, Unit, SimpleAuthenticationScheme<UserPrincipal>>
 
 @Serializable
 data class JwtConfig(
